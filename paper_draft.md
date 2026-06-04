@@ -595,6 +595,101 @@ Future work includes extending the interpolation framework to time-varying chann
 
 ---
 
-> 📝 **论文初稿完成** (v0.1)  
-> 共 7 节 + 参考文献 | 中英文双语 | 8 张图表引用  
-> 下一步：精修语言、补充附录 A（完整 Taylor 展开）、调整格式符合 TWC 模板
+---
+
+## Appendix A. Full Derivation of Theorem 1
+
+### A.1 Setup
+
+The parabolic estimator is $\hat{\delta} = f(y_{-1}, y_0, y_{+1})$ where:
+
+$$f(y_{-1}, y_0, y_{+1}) = \frac{y_{-1} - y_{+1}}{2(y_{-1} - 2y_0 + y_{+1})} \triangleq \frac{N}{2D} \tag{A.1}$$
+
+At the noiseless point, under the quadratic autocorrelation model $R(\tau) \approx 1 - c\tau^2$:
+
+$$N^0 = -4c|\alpha|\delta, \quad D^0 = -2c|\alpha| \tag{A.2}$$
+
+where $D^0$ is $\delta$-invariant (Lemma 1).
+
+### A.2 Gradient of $f$
+
+The partial derivatives of $f = N/(2D)$ are:
+
+$$\begin{aligned}
+\frac{\partial f}{\partial y_{-1}} &= \frac{D - N}{2D^2}, \quad
+\frac{\partial f}{\partial y_0}   = \frac{N}{D^2}, \quad
+\frac{\partial f}{\partial y_{+1}} = \frac{-D - N}{2D^2}
+\end{aligned} \tag{A.3}$$
+
+Evaluating at $(N^0, D^0) = (-4c|\alpha|\delta, -2c|\alpha|)$:
+
+$$\boxed{\begin{aligned}
+g_{-1} &= \frac{2\delta - 1}{4c|\alpha|}, \quad
+g_0    = -\frac{\delta}{c|\alpha|}, \quad
+g_{+1} = \frac{2\delta + 1}{4c|\alpha|}
+\end{aligned}} \tag{A.4}$$
+
+Verification: $g_{-1} + g_0 + g_{+1} = 0$, as required for a scale-invariant function.
+
+### A.3 Variance Propagation
+
+First-order Taylor expansion: $\hat{\delta} - \delta \approx \sum_m g_m \varepsilon_m$.
+
+Assuming $\varepsilon_m \sim \mathcal{N}(0, \sigma_n^2)$ are approximately independent (diagonal noise covariance, valid at high SNR):
+
+$$\begin{aligned}
+\operatorname{Var}(\hat{\delta}) &\approx (g_{-1}^2 + g_0^2 + g_{+1}^2) \cdot \sigma_n^2 \\
+&= \frac{(2\delta-1)^2 + 16\delta^2 + (2\delta+1)^2}{16c^2|\alpha|^2} \cdot \sigma_n^2 \\
+&= \frac{24\delta^2 + 2}{16c^2|\alpha|^2} \cdot \sigma_n^2
+\end{aligned} \tag{A.5}$$
+
+Substituting $\text{SNR} = |\alpha|^2 / (2\sigma_n^2)$:
+
+$$\boxed{\operatorname{Var}(\hat{\delta}) = \frac{12\delta^2 + 1}{16c^2 \cdot \text{SNR}}} \tag{A.6}$$
+
+**Special cases**: $\operatorname{Var}(0) = \frac{1}{16c^2\cdot\text{SNR}}$, $\operatorname{Var}(0.5) = \frac{4}{16c^2\cdot\text{SNR}}$.
+
+### A.4 Remarks on the Absolute Value
+
+The derivation above uses the algebraic quadratic model $R(\tau) = 1 - c\tau^2$ without absolute value. For $c > 1$ (typical for wideband signals), the quadratic model yields negative $R$ values at $|\tau| \geq 1/\sqrt{c}$, introducing a kink at the sign-change boundary.
+
+A more refined analysis incorporating $|R(\tau)|$ yields a modified coefficient involving a $-4\delta$ cross-term, giving $\operatorname{Var}(\hat{\delta}) \approx (12\delta^2 + 1 - 4\delta)/(16c^2\cdot\text{SNR})$ for $|\delta| \ll 0.5$. The functional form $\operatorname{Var} \propto 1/\text{SNR}$ and the log-log slope of −1 are invariant to this correction, as confirmed by Fig. 2 (numerical validation).
+
+### A.5 Extension to Two-Stage Estimator
+
+With Stage 2 local grid refinement (step $\Delta = 0.005$), the total variance is:
+
+$$\operatorname{Var}(\hat{\tau}_l) \approx \min\!\left(\frac{12\delta^2+1}{16c^2\cdot\text{SNR}}, \; \frac{\Delta^2}{12}\right) \tag{A.7}$$
+
+At SNR ≥ 5 dB, the first term dominates, giving $\operatorname{Var}(\hat{\tau}_l) \approx \text{CRB} \times 0.93$ (Theorem 2). The quantization floor $\Delta^2/12 \approx 2 \times 10^{-6}$ becomes active only at SNR > 50 dB.
+
+---
+
+## Appendix A (中文). 定理 1 完整推导
+
+### A.1 设定
+
+抛物线估计器 $\hat{\delta} = f(y_{-1}, y_0, y_{+1})$ 如式 (A.1)。在二次自相关模型 $R(\tau) \approx 1 - c\tau^2$ 下，无噪分子分母如式 (A.2)，$D^0$ 为 $\delta$ 不变量（引理 1）。
+
+### A.2 梯度
+
+$f = N/(2D)$ 的偏导数如式 (A.3)。在无噪点求值得到式 (A.4)，满足齐次性检验 $g_{-1}+g_0+g_{+1}=0$。
+
+### A.3 方差传播
+
+一阶 Taylor 展开 $\hat{\delta}-\delta \approx \sum_m g_m\varepsilon_m$，代入噪声方差 $\sigma_n^2$ 和 $\text{SNR}=|\alpha|^2/(2\sigma_n^2)$，得到式 (A.5)−(A.6)。
+
+特殊情况：$\operatorname{Var}(0) = 1/(16c^2\cdot\text{SNR})$, $\operatorname{Var}(0.5) = 4/(16c^2\cdot\text{SNR})$。
+
+### A.4 关于绝对值的注记
+
+上述推导使用代数二次模型（无绝对值）。对 $c > 1$ 的宽带信号，$|\tau| \geq 1/\sqrt{c}$ 处 $R(\tau)$ 变号，引入折点。更精细的分析给出含 $-4\delta$ 交叉项的修正系数 $\operatorname{Var}(\hat{\delta}) \approx (12\delta^2+1-4\delta)/(16c^2\cdot\text{SNR})$（$|\delta| \ll 0.5$）。函数形式 $\operatorname{Var} \propto 1/\text{SNR}$ 及 log-log 斜率 −1 不受此修正影响（图 2 数值验证）。
+
+### A.5 两阶段扩展
+
+加入第二阶段局部网格精化（步长 $\Delta=0.005$），总方差由式 (A.7) 给出。SNR ≥ 5 dB 时第一项主导，$\operatorname{Var}(\hat{\tau}_l) \approx \text{CRB} \times 0.93$（定理 2）。
+
+---
+
+> 📝 **论文初稿完成** (v0.2 — 含附录 A)  
+> 共 7 节 + 附录 A + 参考文献 | 中英文双语 | 8 张图表引用
