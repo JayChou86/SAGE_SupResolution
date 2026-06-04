@@ -1,0 +1,22 @@
+name: sage-superres
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy=1.26
+  - scipy=1.11
+  - matplotlib=3.8
+  - h5py=3.10
+  - pip
+  - pip:
+    - mat73>=0.63    # 读取 MATLAB v7.3+ .mat 文件
+
+# 如果 conda create 失败 (AssertionError: ca-certificates 冲突)，
+# 使用备选方案:
+#   conda create -n sage-superres python=3.10
+#   conda activate sage-superres
+#   pip install numpy scipy matplotlib h5py mat73
+#
+# 或直接用 pip 在当前环境安装:
+#   pip install numpy scipy matplotlib h5py
