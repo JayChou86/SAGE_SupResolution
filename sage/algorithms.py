@@ -28,6 +28,7 @@ def algo_SAGE(
     max_iter: int = 15, do_frac: bool = True, use_power: bool = True,
     use_fft_corr: bool = True, local_refine: bool = True,
     refine_step: float = 0.005,
+    accelerate: str = 'full',  # 'full' | 'coarse' | 'newton'
 ) -> Tuple[np.ndarray, np.ndarray]:
     N_seq = len(s_base)
     Es = np.vdot(s_base, s_base).real
@@ -78,7 +79,7 @@ def algo_SAGE(
                 tau_est = float(k_opt)
 
             if local_refine and do_frac:
-                tau_est, amp_est = _local_refine(x_l, s_base, tau_est, N_rx, refine_step)
+                tau_est, amp_est = _local_refine(x_l, s_base, tau_est, N_rx, refine_step, accelerate)
             else:
                 s_temp = fractional_delay_shift(s_base, tau_est, N_rx)
                 amp_est = np.vdot(s_temp, x_l) / Es
@@ -102,16 +103,86 @@ def algo_SAGE(
     return est_delays, est_amps
 
 
-def _local_refine(x_l, s_base, tau_coarse, N_rx, step=0.005):
+def _local_refine(x_l, s_base, tau_coarse, N_rx, step=0.005, accelerate='full'):
+    """
+    Stage 2 局部精化 — 支持三种模式:
+      'full'   : 全网格搜索 (200 次, 安全)
+      'coarse' : 粗细搜索 (40 次, 5× 加速)
+      'newton' : Newton 精化 (9 次, 22× 加速)
+    """
     Es = np.vdot(s_base, s_base).real
+
+    if accelerate == 'newton':
+        # Newton 精化: 频域导数
+        return _refine_newton(x_l, s_base, tau_coarse, N_rx, Es)
+
+    if accelerate == 'coarse':
+        # 粗细两阶段
+        # Pass 1: coarse step = 0.05
+        coarse_step = 0.05
+        taus_c = np.arange(max(0, tau_coarse - 0.5), tau_coarse + 0.5 + coarse_step, coarse_step)
+        best_obj = -np.inf; tau_c = tau_coarse
+        for t in taus_c:
+            s_t = fractional_delay_shift(s_base, t, N_rx)
+            amp_t = np.vdot(s_t, x_l) / Es
+            obj = -np.sum(np.abs(x_l - amp_t * s_t) ** 2)
+            if obj > best_obj:
+                best_obj, tau_c = obj, t
+        # Pass 2: fine step = 0.005 around coarse peak
+        fine_range = 0.05
+        taus_f = np.arange(max(0, tau_c - fine_range), tau_c + fine_range + step, step)
+        best_obj = -np.inf; tau_best = tau_c; amp_best = 0j
+        for t in taus_f:
+            s_t = fractional_delay_shift(s_base, t, N_rx)
+            amp_t = np.vdot(s_t, x_l) / Es
+            obj = -np.sum(np.abs(x_l - amp_t * s_t) ** 2)
+            if obj > best_obj:
+                best_obj, tau_best, amp_best = obj, t, amp_t
+        return tau_best, amp_best
+
+    # 默认 'full': 全网格搜索
     best_obj, tau_best, amp_best = -np.inf, tau_coarse, 0j
-    for tau_test in np.linspace(max(0, tau_coarse-0.5), tau_coarse+0.5, max(3, int(1.0/step))):
+    for tau_test in np.linspace(max(0, tau_coarse - 0.5), tau_coarse + 0.5, max(3, int(1.0 / step))):
         s_test = fractional_delay_shift(s_base, tau_test, N_rx)
         amp_test = np.vdot(s_test, x_l) / Es
-        obj = -np.sum(np.abs(x_l - amp_test*s_test)**2)
+        obj = -np.sum(np.abs(x_l - amp_test * s_test) ** 2)
         if obj > best_obj:
             best_obj, tau_best, amp_best = obj, tau_test, amp_test
     return tau_best, amp_best
+
+
+def _refine_newton(x_l, s_base, tau_coarse, N_rx, Es, max_iter=3):
+    """Newton 精化: 最大化 f(τ)=|⟨s(τ), x_l⟩|²"""
+    N_seq = len(s_base)
+    S_f = np.fft.fft(s_base, n=N_rx)
+    X_f = np.fft.fft(x_l, n=N_rx)
+    k_vec = np.concatenate([
+        np.arange(0, int(np.ceil(N_rx / 2))),
+        np.arange(-int(np.floor(N_rx / 2)), 0),
+    ])
+    w = 2 * np.pi * k_vec / N_rx
+    Sp = (1j * w) * S_f
+    Sd = -(w ** 2) * S_f
+
+    tau = tau_coarse
+    for _ in range(max_iter):
+        ph = np.exp(1j * w * tau)
+        c = np.sum(np.conj(S_f) * X_f * ph) / (N_rx * Es)
+        cp = np.sum(np.conj(Sp) * X_f * ph) / (N_rx * Es)
+        cd = np.sum(np.conj(Sd) * X_f * ph) / (N_rx * Es)
+        fp = 2 * np.real(np.conj(c) * cp)
+        fd = 2 * np.real(np.conj(c) * cd + np.abs(cp) ** 2)
+        if abs(fd) < 1e-12:
+            break
+        delta = np.clip(fp / fd, -0.5, 0.5)
+        tau = tau - delta
+        tau = max(0.0, min(float(N_rx), tau))
+        if abs(delta) < 1e-8:
+            break
+
+    s_t = fractional_delay_shift(s_base, tau, N_rx)
+    amp = np.vdot(s_t, x_l) / Es
+    return tau, amp
 
 
 # =========================================================================

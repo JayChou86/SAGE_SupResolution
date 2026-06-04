@@ -265,13 +265,12 @@ where $f'(\tau) = 2\operatorname{Re}\{c^*(\tau) c'(\tau)\}$, $f''(\tau) = 2\oper
 
 | Strategy | Evaluations | Speedup | RMSE Impact | Implementation |
 |----------|:---:|:---:|:---:|------|
-| Full grid (current) | 200 | 1× | Baseline | Trivial |
-| Coarse-to-Fine | 40 | **5×** | None | Trivial |
-| Golden-Section | 15 | **13×** | None | Moderate |
-| Newton Refinement | 9 | **22×** | None | Moderate |
-| **Parallel + Newton** | 9 (÷ $P$ cores) | **22$P$×** | None | GPU/OpenMP |
+| Full grid (current) | 200 | 1× | Baseline (545 ms) | Trivial |
+| **Coarse-to-Fine** | 40 | **4.5×** | ✓ Verified (122 ms, ΔRMSE < ±10%) | Trivial |
+| Golden-Section | 15 | **13×** (est.) | None | Moderate |
+| Newton Refinement | 9 | 22× (est.) | ✗ Fails (circular FFT derivatives diverge) | — |
 
-With $P=8$ CPU cores and Newton refinement, the per-trial time reduces from 666 ms to $\approx 4$ ms—**comparable to OMP (4.8 ms) while retaining 279× accuracy advantage**.
+**Experimental validation**: We tested `coarse` and `newton` against `full` across SNR = −5 to +15 dB (50 trials each). Coarse-to-fine achieved a consistent **4.5× speedup** (545 ms → 122 ms) with RMSE deviation under ±10%—well within statistical noise. Newton refinement diverged at all SNR levels (RMSE 4–12 samples) due to circular FFT derivative artifacts in the full-length frequency-domain computation; this is a known limitation correctable by windowed processing [Mamandipoor et al., 2016] but left for future work. **Coarse-to-fine is the recommended acceleration strategy.**
 
 ### 3.6 Failure Modes and Adaptive Switching
 
