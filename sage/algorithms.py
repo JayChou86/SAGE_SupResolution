@@ -367,156 +367,87 @@ def algo_SBL(y_rx, A_dict, tau_grid, L_paths, N0=None, max_iter=50, use_woodbury
 # 6. Root-MUSIC — 子空间方法 / 连续时延估计
 # =========================================================================
 
-def algo_ROOTMUSIC(
+def algo_ESPRIT(
     y_rx: np.ndarray,
     s_base: np.ndarray,
     L_paths: int,
     N_rx: int = None,
     M_smooth: int = None,
-    signal_thresh: float = 0.1,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Root-MUSIC 时延估计 (Frequency-Domain)。
+    ESPRIT 时延估计 (Frequency-Domain TLS-ESPRIT)。
+
+    比 Root-MUSIC 更鲁棒: 无需多项式求根,
+    利用信号子空间的旋转不变性直接估计时延。
 
     原理:
-      频域信道比 H(f) = Y(f)/S(f) ≈ Σ a_k·e^{-j2πfτ_k}
-      → 构建平滑 Hankel 矩阵 → SVD → 噪声子空间 → 求根多项式
-      → K 个离单位圆最近的根 → 连续时延
-
-    Parameters
-    ----------
-    y_rx : 1D ndarray
-        接收信号 (实或复)。
-    s_base : 1D ndarray
-        发射信号。
-    L_paths : int
-        估计的多径数。
-    N_rx : int, optional
-        接收信号长度 (默认 = len(y_rx))。
-    M_smooth : int, optional
-        Hankel 矩阵的列数 (默认 = N_rx//3)。
-    signal_thresh : float
-        频域比值 H(f) 仅在 |S(f)| > thresh·max(|S|) 的频率点计算。
-
-    Returns
-    -------
-    est_delays : 1D ndarray
-        连续时延估计 (采样点)。
-    est_amps : 1D ndarray
-        复幅度 (最小二乘重估)。
+      H(f) = Y(f)/S(f) = Σ a_k·e^{-j2πfτ_k}
+      → 选择矩阵 J₁, J₂ → 最小二乘 → 特征值 → 时延
     """
     if N_rx is None:
         N_rx = len(y_rx)
 
-    N_seq = len(s_base)
-
-    # 1. 频域比值 H(f) = Y(f) / S(f)
-    # 零填充到 N_rx 以匹配接收信号长度
-    S_f_full = np.fft.fft(s_base, n=N_rx)
+    S_f = np.fft.fft(s_base, n=N_rx)
     Y_f = np.fft.fft(y_rx, n=N_rx)
 
-    # 只在高 SNR 频点使用
-    mask = np.abs(S_f_full) > signal_thresh * np.max(np.abs(S_f_full))
-
-    # 对于实信号，只用正频率部分 (避免共轭对称导致 rank 翻倍)
-    if np.allclose(y_rx.imag, 0) and np.allclose(s_base.imag, 0):
-        # 正频率, 跳过 DC
-        freq_start, freq_end = 1, N_rx // 2
-        mask = mask[freq_start:freq_end]
-        H_raw = Y_f[freq_start:freq_end] / (S_f_full[freq_start:freq_end] + 1e-12)
-        delta_f = 1.0 / N_rx
-    else:
-        # 复信号: 用正半频带 f ∈ [0, Δf, ..., (N_rx/2-1)Δf]
-        # 全频带 FFT 的负频率部分引入非单调相位 → 破坏 Vandermonde 结构
-        half = N_rx // 2
-        H_raw = Y_f[:half] / (S_f_full[:half] + 1e-12)
-        delta_f = 1.0 / N_rx
-
-    # 实信号: 应用 mask (带限); 复信号: H_raw 无需 mask
-    if np.allclose(y_rx.imag, 0) and np.allclose(s_base.imag, 0):
-        H_raw = H_raw[mask]
+    # 正半频带: 连续单调频率, Vandermonde 结构正确
+    half = N_rx // 2
+    H_raw = Y_f[:half] / (S_f[:half] + 1e-12)
     M = len(H_raw)
-    if M < 3 * L_paths:
-        raise ValueError(f"Not enough frequency bins ({M}) for {L_paths} paths")
+    delta_f = 1.0 / N_rx
 
-    # 2. 构建 Hankel 平滑矩阵 (前向-后向平均)
     if M_smooth is None:
-        M_smooth = max(L_paths * 4, M // 3)
-    L = M - M_smooth + 1  # Hankel 矩阵行数
+        M_smooth = M // 2
+    L = M - M_smooth + 1
     if L <= L_paths:
         L = L_paths + 1
         M_smooth = M - L + 1
 
+    # Hankel 矩阵
     H_hankel = np.zeros((L, M_smooth), dtype=complex)
     for i in range(L):
         H_hankel[i, :] = H_raw[i:i + M_smooth]
 
-    # 前向-后向平均 (增强对相干源的鲁棒性)
-    H_fb = np.hstack([H_hankel, np.fliplr(np.conj(H_hankel))])
+    # SVD
+    U, s, Vh = np.linalg.svd(H_hankel, full_matrices=False)
+    Us = U[:, :L_paths]  # 信号子空间
 
-    # 3. SVD → 噪声子空间
-    U, s, Vh = np.linalg.svd(H_fb, full_matrices=False)
-    # 噪声子空间: 舍弃前 L_paths 个奇异向量
-    U_noise = U[:, L_paths:]
+    # TLS-ESPRIT: J₁Us·Ψ ≈ J₂Us
+    J1 = Us[:-1, :]  # 去掉最后一行
+    J2 = Us[1:, :]   # 去掉第一行
 
-    # 4. 求根 MUSIC
-    # 多项式系数: p_i = Σ_{k} (U_n U_n^H) 沿对角求和
-    # P(z) = a^H(z) U_n U_n^H a(z),  a(z) = [1, z, ..., z^{L-1}]
-    # 求根多项式: f(z) = z^{L-1} · a^T(1/z) U_n U_n^H a(z)
-    Q = U_noise @ U_noise.conj().T  # L × L
+    # 总体最小二乘 (TLS)
+    UV = np.hstack([J1, J2])
+    _, _, V_tls = np.linalg.svd(UV, full_matrices=False)
+    V12 = V_tls[:L_paths, L_paths:]  # 右上块
+    V22 = V_tls[L_paths:, L_paths:]  # 右下块
+    Psi = -V12 @ np.linalg.pinv(V22)
 
-    # 构建求根多项式系数 (degree 2L-2)
-    # MUSIC null spectrum: P(z) = a^H(z) Q a(z) = Σ Q_{i,j} z^{j-i}
-    # Multiply by z^{L-1}: f(z) = Σ Q_{i,j} z^{L-1+j-i}
-    # coeff[k] = Σ_{i,j: L-1+j-i=k} Q_{i,j}
-    poly_coeffs = np.zeros(2 * L - 1, dtype=complex)
-    for i in range(L):
-        for j in range(L):
-            k = L - 1 + j - i
-            if 0 <= k < 2 * L - 1:
-                poly_coeffs[k] += Q[i, j]
+    # 特征值 → 时延
+    eigvals = np.linalg.eigvals(Psi)
+    # 只保留单位圆内的特征值
+    valid = np.abs(eigvals) <= 1.0
+    if np.sum(valid) < L_paths:
+        valid = np.abs(np.abs(eigvals) - 1.0) < 0.5
 
-    # 求所有根
-    roots = np.roots(poly_coeffs)
+    z_k = eigvals[valid]
+    # 按幅值排序, 取前 K 个
+    idx = np.argsort(-np.abs(z_k))[:L_paths]
+    z_k = z_k[idx]
 
-    # 5. 选 L_paths 个离单位圆最近的互异根 → 转换为时延
-    tol = 1e-2
-    unit_circle_dist = np.abs(np.abs(roots) - 1.0)
-    sorted_idx = np.argsort(unit_circle_dist)
+    delays = np.mod(-np.angle(z_k) / (2 * np.pi * delta_f), N_rx)
+    delays = np.sort(delays)
 
-    selected_delays = []
-    for idx in sorted_idx:
-        z = roots[idx]
-        if np.abs(np.abs(z) - 1.0) > 0.05:  # 只取近单位圆根
-            continue
-        tau = -np.angle(z) / (2 * np.pi * delta_f)
-        tau = np.mod(tau, N_rx)
-        # 去重: 与前已选时延距离 > 5 采样点
-        if all(abs(tau - t) > 5.0 for t in selected_delays):
-            selected_delays.append(tau)
-        if len(selected_delays) >= L_paths:
-            break
-
-    # 不足 K 个时用最接近单位圆的根填充
-    while len(selected_delays) < L_paths:
-        idx = sorted_idx[len(selected_delays)]
-        z = roots[idx]
-        tau = np.mod(-np.angle(z) / (2 * np.pi * delta_f), N_rx)
-        if all(abs(tau - t) > 1.0 for t in selected_delays):
-            selected_delays.append(tau)
-        else:
-            selected_delays.append(tau + len(selected_delays) * 10.0)
-
-    delays = np.sort(np.array(selected_delays))
-
-    # 6. 最小二乘重估幅度
-    # 构建字典: A[:,k] = s_base 延迟 τ_k
-    A_dict = np.zeros((N_rx, L_paths), dtype=complex)
+    # 最小二乘幅度
+    from sage.signal_utils import fractional_delay_shift
+    A = np.zeros((N_rx, L_paths), dtype=complex)
     for k in range(L_paths):
-        from sage.signal_utils import fractional_delay_shift
-        A_dict[:, k] = fractional_delay_shift(s_base, delays[k], N_rx)
-
-    amps, _, _, _ = np.linalg.lstsq(A_dict, y_rx, rcond=None)
+        A[:, k] = fractional_delay_shift(s_base, delays[k], N_rx)
+    amps, _, _, _ = np.linalg.lstsq(A, y_rx, rcond=None)
 
     return delays, amps
 
+
+# 保留 Root-MUSIC 作为别名 (向后兼容)
+def algo_ROOTMUSIC(*args, **kwargs):
+    return algo_ESPRIT(*args, **kwargs)

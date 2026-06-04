@@ -18,7 +18,7 @@
 | Monte Carlo 仿真 | ✅ | Frac SAGE 时延 RMSE 改善 **30-97%** |
 | 理论分析 | ✅ | 引理 1 + 定理 1(闭合方差) + 定理 2(CRB 效率=**0.93**) |
 | NOMP 基线 | ✅ | Frac SAGE(0.27) 优于 NOMP(0.55) |
-| Root-MUSIC 基线 | ⚠️ | 已实现，相干源场景仅分辨 2/3 路径 |
+| Root-MUSIC/ESPRIT | ⚠️ | 频域子空间方法受 H(f) 除噪放大限制，不适配本场景 |
 | 海试诊断 | ✅ | R²=0.053 根因确认 |
 | 海试降采样扫描 | ⚠️ | 零填充 FFT 修复发散，4/8 正向改善 |
 | SBL 基线 | ✅ | **已修复**：自适应噪声方差，RMSE 37→0.29 (130×↑) |
@@ -177,6 +177,7 @@ SAGE_SupResolution_reasonix/
 | 05-27 | 性能优化 (local_refine) | RMSE 15× ↑, CRB 效率 0.98-1.08 |
 | 05-27 | MC 升级到 200 trials | Frac RMSE=0.024, 12×优于MF, 20分钟 |
 | 05-27 | SBL 修复 (自适应噪声方差) | RMSE 37→0.29, 130×↑, 与 MF 持平 |
+| 05-27 | Root-MUSIC→ESPRIT 改进 | 频域子空间方法受 H(f) 除噪放大限制, 结论: Frac SAGE 更优 |
 
 ---
 
