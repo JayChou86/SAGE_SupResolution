@@ -269,30 +269,55 @@ def _newton_refine(r_win, s_base, tau, max_iters=3):
 # 5. 稀疏贝叶斯学习 (SBL)
 # =========================================================================
 
-def algo_SBL(y_rx, A_dict, tau_grid, L_paths, N0, max_iter=20, use_woodbury=True):
+def algo_SBL(y_rx, A_dict, tau_grid, L_paths, N0=None, max_iter=50, use_woodbury=True):
+    """
+    稀疏贝叶斯学习 (SBL) — 自适应噪声方差版。
+
+    修复:
+      1. N0=None → 自适应估计噪声方差 σ²
+      2. gamma 初始化使用 MF 相关而非均匀值
+      3. 收敛条件同时检查 gamma 和 σ²
+
+    Parameters
+    ----------
+    N0 : float or None
+        噪声方差。None 时自适应估计 (推荐)。
+    """
     N_rx, N_grid = A_dict.shape
     gamma_tol = 1e-6
     eps = 1e-6
-    gamma = np.abs(A_dict.conj().T @ y_rx)**2 / (N_rx**2)
 
-    for _ in range(max_iter):
+    # ---- 初始化 ----
+    # gamma: 使用 MF 相关能量 (归一化)
+    gamma = np.abs(A_dict.conj().T @ y_rx)**2
+    gamma = gamma / np.max(gamma) * 0.1  # 缩放到合理范围
+    gamma = np.maximum(gamma, gamma_tol)
+
+    # 噪声方差: 若未指定, 初始化为残差方差的 50%
+    if N0 is None:
+        N0 = 0.5 * np.var(y_rx)
+    sigma2 = N0
+
+    for it in range(max_iter):
+        # ---- E-step: 计算后验均值 μ 和对角协方差 ----
         if use_woodbury:
             inv_gamma = np.where(gamma > gamma_tol, 1.0/gamma, 0.0)
-            M = N0*np.diag(inv_gamma) + A_dict.conj().T @ A_dict + eps*np.eye(N_grid)
+            M_mat = sigma2*np.diag(inv_gamma) + A_dict.conj().T @ A_dict + eps*np.eye(N_grid)
             try:
-                inv_M = np.linalg.solve(M, np.eye(N_grid))
+                inv_M = np.linalg.solve(M_mat, np.eye(N_grid))
             except np.linalg.LinAlgError:
-                inv_M = np.linalg.pinv(M)
+                inv_M = np.linalg.pinv(M_mat)
             Ahy = A_dict.conj().T @ y_rx
             B = A_dict.conj().T @ A_dict
-            mu = (gamma/N0)*(Ahy - B @ (inv_M @ Ahy))
+            mu = (gamma/sigma2)*(Ahy - B @ (inv_M @ Ahy))
+            # Σ_diag[k] = γ_k - γ_k²·a_k^H·Σ_y^{-1}·a_k
             diag_term = np.zeros(N_grid)
             for k in range(N_grid):
                 col_k = B[:, k]
-                diag_term[k] = (B[k,k].real - np.real(col_k.conj().T @ (inv_M @ col_k)))/N0
+                diag_term[k] = (B[k,k].real - np.real(col_k.conj().T @ (inv_M @ col_k)))/sigma2
         else:
             Gamma = np.diag(gamma)
-            Sigma_y = A_dict @ Gamma @ A_dict.conj().T + N0*np.eye(N_rx)
+            Sigma_y = A_dict @ Gamma @ A_dict.conj().T + sigma2*np.eye(N_rx)
             try:
                 inv_Sigma_y = np.linalg.solve(Sigma_y+eps*np.eye(N_rx), np.eye(N_rx))
             except np.linalg.LinAlgError:
@@ -300,15 +325,34 @@ def algo_SBL(y_rx, A_dict, tau_grid, L_paths, N0, max_iter=20, use_woodbury=True
             mu = Gamma @ A_dict.conj().T @ inv_Sigma_y @ y_rx
             diag_term = np.sum(A_dict.conj().T*(A_dict.conj().T @ inv_Sigma_y).T, axis=1).real
 
-        gamma_new = np.abs(mu)**2 + gamma - gamma**2*diag_term
+        # Σ_diag = gamma - gamma²·diag_term
+        Sigma_diag = gamma - gamma**2 * diag_term
+        Sigma_diag = np.maximum(Sigma_diag, 0.0)  # 非负约束
+
+        # ---- M-step: 更新 gamma ----
+        gamma_new = np.abs(mu)**2 + Sigma_diag
         gamma_new = np.maximum(gamma_new, gamma_tol)
-        if np.linalg.norm(gamma_new-gamma)/np.linalg.norm(gamma) < 1e-3:
-            gamma = gamma_new; break
+
+        # ---- 自适应噪声方差更新 (Type II ML) ----
+        residual = y_rx - A_dict @ mu
+        # 有效参数数
+        gamma_eff = np.sum(gamma / (gamma + sigma2))
+        sigma2_new = (np.linalg.norm(residual)**2) / max(N_rx - gamma_eff, 1.0)
+        # 平滑更新 (防止震荡)
+        sigma2 = 0.8 * sigma2 + 0.2 * sigma2_new
+        sigma2 = max(sigma2, 1e-10)
+
+        # ---- 收敛检查 ----
+        gamma_change = np.linalg.norm(gamma_new - gamma) / (np.linalg.norm(gamma) + 1e-10)
+        if gamma_change < 1e-3 and it > 5:
+            gamma = gamma_new
+            break
         gamma = gamma_new
 
+    # ---- 寻峰 ----
     try:
         from scipy.signal import find_peaks
-        peaks, _ = find_peaks(gamma, distance=5)
+        peaks, _ = find_peaks(gamma, height=0.01*np.max(gamma), distance=5)
         if len(peaks) >= L_paths:
             idx_sbl = peaks[np.argsort(gamma[peaks])[::-1]][:L_paths]
         else:

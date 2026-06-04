@@ -165,7 +165,7 @@ for s_idx, SNR_dB in enumerate(SNR_dB_vec):
         d_nomp, a_nomp = algo_NOMP(
             y_rx, s_tx_base, N_rx, L_paths, tau_grid,
         )
-        d_sbl, a_sbl = algo_SBL(y_rx, A_dict, tau_grid, L_paths, N0,
+        d_sbl, a_sbl = algo_SBL(y_rx, A_dict, tau_grid, L_paths,
                                 use_woodbury=True)
 
         ests_d = [d_int, d_frac, d_mf, d_omp, d_nomp, d_sbl]
