@@ -225,14 +225,19 @@ Output: {τ̂_l, α̂_l} for l = 1,...,L
 
 ### 3.4 Comparison with Existing Methods
 
-| Method | Dictionary | Continuous τ | Complexity per iter |
-|--------|:---:|:---:|:---:|
-| Integer SAGE | ✗ | ✗ | $O(N_r N_s)$ |
-| **Fractional SAGE (ours)** | ✗ | ✓ | $O(N_r \log N_r + N_r/\Delta)$ |
-| MF (grid 0.83) | 230 atoms | ✗ | $O(N_r N_{\text{grid}})$ |
-| OMP | $N_{\text{grid}}$ atoms | ✗ | $O(L N_r N_{\text{grid}})$ |
-| NOMP | $N_{\text{grid}}$ atoms | ✓ | $O(L N_r N_{\text{grid}} + L N_r \log N_r)$ |
-| Root-MUSIC | ✗ | ✓ | $O(N_r^3)$ (SVD) |
+*Table: Complexity and Measured Runtime (0 dB SNR, 30 trials, N_r=1000, N_s=511, L=3)*
+
+| Method | Cont. τ | Dict. | FLOPs (theory) | Time/ trial | vs Int SAGE |
+|--------|:---:|:---:|:---|:---:|:---:|
+| Int SAGE | ✗ | ✗ | $O(L I N_r N_s)$ | **9.8 ms** | 1× |
+| **Frac SAGE** | ✓ | ✗ | $O(L I (N_r\log N_r + N_r/\Delta))$ | 665.7 ms | 68× |
+| MF (230) | ✗ | ✓ | $O(N_{\text{grid}} N_r)$ | 221.9 ms | 23× |
+| OMP | ✗ | ✓ | $O(L N_{\text{grid}} N_r)$ | **4.8 ms** | 0.5× |
+| NOMP | ✓ | ✓ | $O(L N_r N_{\text{grid}})$ | 7.9 ms | 0.8× |
+| SBL | ✗ | ✓ | $O(I_{\text{EM}} N_{\text{grid}}^2)$ | 435.2 ms | 44× |
+| ESPRIT | ✓ | ✗ | $O(N_r^3)$ (SVD) | 15.5 ms | 1.6× |
+
+> **Accuracy–Complexity Trade-off**: Frac SAGE is 68× slower than Int SAGE, but delivers **279× higher accuracy** (RMSE 0.024 vs 6.687). The dominant cost is Stage 2 local grid refinement (200 evaluations of $|C(\tau)|^2$ per path per iteration), which can be accelerated via parallelization or early-stopping heuristics. OMP and NOMP are the fastest but suffer from greedy selection errors in dense-path scenarios.
 
 ---
 
