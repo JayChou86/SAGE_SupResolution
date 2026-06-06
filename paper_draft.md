@@ -549,6 +549,10 @@ The RMSE-to-CRB ratio of 1.00–1.17 across the entire SNR range confirms that t
 
 ### 5.5 Ablation Study
 
+![Ablation Study](results/ablation_study.png)
+
+*Fig. 8: Ablation study showing the contribution of each algorithmic component. Stage 1 (parabolic interpolation) provides a 9× improvement over Integer SAGE. Stage 2 (local grid refinement) contributes an additional 14×, bringing the total to 143×. The combined configuration approaches the CRB (red dashed line).*
+
 *Table IV: Contribution of Each Component (0 dB SNR, 100 MC trials)*
 
 | Configuration | RMSE | Improvement |
