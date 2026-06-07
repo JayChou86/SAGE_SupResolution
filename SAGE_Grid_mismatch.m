@@ -8,10 +8,8 @@ load('data475.mat');
 y_raw_orig = sig_rev_m(:); 
 s_tx_orig  = sig_bd_m(:);  
 
-% 定义要扫描的降采样倍数 (使用有理数比例 P/Q)
-% 例如 down_ratio = 3.46，即 P = 100, Q = 346
-% down_ratios = 3.0 : 0.05 : 4.0;
-down_ratios = 1.0 : 0.5 : 8.0; 
+% 定义要扫描的降采样倍数 M = 1, ..., 6
+down_ratios = 1:6;
 
 num_tests = length(down_ratios);
 
@@ -107,19 +105,68 @@ for test_idx = 1:num_tests
         ratio, mse_int_list(test_idx), mse_frac_list(test_idx), improvement_list(test_idx));
 end
 
-%% 绘制学术级图表：栅格失配敏感度
-figure('Name', 'Grid Mismatch Sensitivity', 'Position', [150, 150, 700, 500]);
+%% 绘制学术级图表：栅格失配敏感度 (匹配Python fig_12风格)
+figure('Name', 'Grid Mismatch Sensitivity', 'Color', 'w', 'Position', [150, 150, 800, 550]);
+
+% --- 左轴: MSE (semilogy) ---
 yyaxis left;
-plot(down_ratios, mse_int_list, '-bs', 'LineWidth', 1.5, 'MarkerSize', 6); hold on;
-plot(down_ratios, mse_frac_list, '-ro', 'LineWidth', 1.5, 'MarkerSize', 6);
+semilogy(down_ratios, mse_int_list, 'b-s', 'LineWidth', 2, 'MarkerSize', 8, ...
+    'MarkerFaceColor', 'b'); hold on;
+semilogy(down_ratios, mse_frac_list, 'r-o', 'LineWidth', 2, 'MarkerSize', 8, ...
+    'MarkerFaceColor', 'r');
 ylabel('Equalization MSE', 'FontSize', 12, 'FontWeight', 'bold');
-set(gca, 'YScale', 'log'); % 使用对数坐标系展示微小差异
+% 左轴留余量
+all_mse = [mse_int_list; mse_frac_list];
+ylim([min(all_mse)*0.9, max(all_mse)*1.1]);
+set(gca, 'YColor', 'k', 'FontSize', 10, 'FontName', 'Times New Roman');
 
+% --- 右轴: Improvement bar ---
 yyaxis right;
-bar(down_ratios, improvement_list, 0.4, 'FaceColor', [0.7 0.7 0.7], 'EdgeColor', 'none', 'FaceAlpha', 0.5);
-ylabel('Performance Improvement (%)', 'FontSize', 12, 'FontWeight', 'bold');
+bar_colors = zeros(length(improvement_list), 3);
+for i = 1:length(improvement_list)
+    if improvement_list(i) < 0
+        bar_colors(i,:) = [0.55 0 0];     % darkred
+    else
+        bar_colors(i,:) = [0 0.39 0];     % darkgreen
+    end
+end
+b = bar(down_ratios, improvement_list, 0.3, 'FaceColor', 'flat', ...
+    'EdgeColor', [0.33 0.33 0.33], 'LineWidth', 0.8, 'FaceAlpha', 0.5);
+b.CData = bar_colors;
+ylabel('Improvement (%)', 'FontSize', 12, 'FontWeight', 'bold');
+set(gca, 'YColor', 'k', 'FontSize', 10, 'FontName', 'Times New Roman');
 
-xlabel('Decimation Factor', 'FontSize', 12, 'FontWeight', 'bold');
-title('Impact of Sampling Grid Misalignment on Estimation Accuracy', 'FontSize', 14);
-legend('Standard SAGE (Integer Grid)', 'Proposed SAGE (Fractional Grid)', 'Improvement Ratio', 'Location', 'NorthWest');
-grid on;
+% --- 柱底标注百分比 ---
+yyaxis right;  % 确保在右轴操作
+y_range = max(abs(improvement_list));
+ylim([min(improvement_list) - y_range*0.4, max(improvement_list) + y_range*0.15]);
+
+for i = 1:length(improvement_list)
+    v = improvement_list(i);
+    y_pos = 0 - y_range * 0.05;           % 统一在0轴下方（柱底之下）
+    if v >= 0
+        txt = sprintf('+%.1f%%', v);
+    else
+        txt = sprintf('-%.1f%%', abs(v));
+    end
+    text(down_ratios(i), y_pos, txt, ...
+        'HorizontalAlignment', 'center', 'FontSize', 8.5, 'FontWeight', 'bold', ...
+        'Color', bar_colors(i,:), 'FontName', 'Times New Roman');
+end
+
+% --- 参考线 ---
+yline(0, 'Color', [0.5 0.5 0.5], 'LineWidth', 0.8);
+
+xlabel('Decimation Factor $M$', 'FontSize', 12, 'FontWeight', 'bold', ...
+    'FontName', 'Times New Roman', 'Interpreter', 'latex');
+title('Grid Mismatch Sensitivity — Sea Trial ($K=8$)', 'FontWeight', 'bold', ...
+    'FontSize', 13, 'FontName', 'Times New Roman');
+
+legend('Integer SAGE', 'Fractional SAGE', 'Location', 'northwest', ...
+    'FontSize', 10, 'FontName', 'Times New Roman', 'Box', 'off');
+set(gca, 'XTick', down_ratios);
+grid on; box on;
+
+% --- 保存图片 ---
+saveas(gcf, 'results/fig_12_seatrial_mat.png');
+fprintf('\n>>> 图片已保存至 results/fig_12_seatrial_mat.png\n');

@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """
-海试栅格失配 — 零填充频域 SAGE (复现 MATLAB)
+娴疯瘯鏍呮牸澶遍厤 鈥?闆跺～鍏呴鍩?SAGE (澶嶇幇 MATLAB)
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,7 +28,7 @@ for ti, ratio in enumerate(down_ratios):
     else: yr=decimate(y0,M,ftype='fir',zero_phase=True); st=decimate(s0,M,ftype='fir',zero_phase=True)
     N=len(yr); Es=np.sum(np.abs(st)**2)
 
-    # 零填充到 2N → 线性相关 (关键修复!)
+    # 闆跺～鍏呭埌 2N 鈫?绾挎€х浉鍏?(鍏抽敭淇!)
     N2=2*N
     Sf=fft(st,n=N2); Yf=fft(yr,n=N2)
     fv=np.concatenate([np.arange(0,N2//2),np.arange(-N2//2,0)])/N2
@@ -40,7 +40,7 @@ for ti, ratio in enumerate(down_ratios):
             for k in range(K):
                 xkf=yr_f+akf[:,k]*Sf
                 Rk=ifft(xkf*np.conj(Sf))/Es
-                # 只在前 N 个样本中找峰 (线性相关有效范围)
+                # 鍙湪鍓?N 涓牱鏈腑鎵惧嘲 (绾挎€х浉鍏虫湁鏁堣寖鍥?
                 idx=int(np.argmax(np.abs(Rk[:N])))
                 if do_frac and 0<idx<N-1:
                     ym=np.abs(Rk[idx-1]); y0_=np.abs(Rk[idx]); yp=np.abs(Rk[idx+1])
@@ -52,10 +52,10 @@ for ti, ratio in enumerate(down_ratios):
                 alpha[k]=np.sum((xkf*np.conj(Sf))*ph)/(N2*Es)
                 akf[:,k]=alpha[k]*np.exp(-1j*2*np.pi*fv*tau[k])
                 yr_f=xkf-akf[:,k]*Sf
-        # H(f) 用原始 N 长频点
+        # H(f) 鐢ㄥ師濮?N 闀块鐐?
         fv_n=np.concatenate([np.arange(0,N//2),np.arange(-N//2,0)])/N if N%2==0 else np.concatenate([np.arange(0,(N-1)//2+1),np.arange(-(N-1)//2,0)])/N
         H=np.sum([alpha[k]*np.exp(-1j*2*np.pi*fv_n*tau[k]) for k in range(K)],axis=0)
-        # 频域降采样 H_2N → H_N
+        # 棰戝煙闄嶉噰鏍?H_2N 鈫?H_N
         return tau,alpha,H
 
     tau_i,alpha_i,H_i=run_sage(False)
@@ -76,16 +76,16 @@ os.makedirs(results_dir,exist_ok=True)
 fig,ax1=plt.subplots(figsize=(10,6))
 ax1.semilogy(down_ratios,mse_i,'b-s',lw=1.5,ms=7,label='Standard SAGE (Integer Grid)')
 ax1.semilogy(down_ratios,mse_f,'r-o',lw=1.5,ms=7,label='Proposed SAGE (Fractional Grid)')
-ax1.set_xlabel('Decimation Factor',fontweight='bold'); ax1.set_ylabel('Equalization MSE',fontweight='bold')
+ax1.set_xlabel('Decimation Factor',); ax1.set_ylabel('Equalization MSE',)
 ax1.legend(loc='upper left'); ax1.grid(True,alpha=0.3)
 ax2=ax1.twinx()
 ax2.bar(down_ratios,imp,width=0.25,color='gray',alpha=0.35)
-ax2.set_ylabel('Improvement (%)',fontweight='bold')
+ax2.set_ylabel('Improvement (%)',)
 for i,(r,v) in enumerate(zip(down_ratios,imp)):
     c='darkgreen' if v>0 else 'darkred'; o=2 if v>=0 else -4
-    ax2.text(r,v+o,f'{v:.1f}%',ha='center',fontsize=7,color=c,fontweight='bold')
-ax1.set_title('Grid Mismatch Sensitivity — Sea Trial (Zero-Padded FFT SAGE)',fontweight='bold')
-fig.tight_layout(); fig.savefig(os.path.join(results_dir,'seatrial_mse.png'),dpi=150)
+    ax2.text(r,v+o,f'{v:.1f}%',ha='center',fontsize=7,color=c,)
+ax1.set_title('Grid Mismatch Sensitivity 鈥?Sea Trial (Zero-Padded FFT SAGE)',)
+fig.tight_layout(); fig.savefig(os.path.join(results_dir,'seatrial_mse.png'),dpi=1200)
 print(f"\nFigure: {os.path.join(results_dir,'seatrial_mse.png')}")
 print(f"Positive: {np.sum(imp>0)}/{len(down_ratios)}, Max: {np.max(imp):.2f}%")
 print("Done.")

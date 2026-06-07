@@ -180,8 +180,78 @@ est_delays_sbl = tau_grid(idx_sbl)';
 est_amps_sbl = mu(idx_sbl); 
 residual_sbl = y_rx - A_dict(:, idx_sbl) * est_amps_sbl;
 
-%% 7. 后处理：路径自动匹配 (解决乱序问题)
-match_delays = zeros(L_paths, 5); match_amps = zeros(L_paths, 5); % [Int, Frac, MF, OMP, SBL]
+%% 7. 算法 F: NOMP (Gridless OMP) — OMP粗搜 + 局部细网格精化连续时延
+% Step 1: OMP粗搜（复用字典，获取粗时延和初始幅度）
+residual_nomp_temp = y_rx;
+idx_nomp_coarse = zeros(L_paths, 1);
+tau_nomp_coarse = zeros(L_paths, 1);
+for l = 1:L_paths
+    corr_nomp = abs(A_dict' * residual_nomp_temp);
+    [~, best_idx] = max(corr_nomp);
+    idx_nomp_coarse(l) = best_idx;
+    tau_nomp_coarse(l) = tau_grid(best_idx);
+    A_sub = A_dict(:, idx_nomp_coarse(1:l));
+    amps_tmp = A_sub \ y_rx;
+    residual_nomp_temp = y_rx - A_sub * amps_tmp;
+end
+
+% Step 2: 迭代局部细网格精化 + 干扰消除 (类SAGE机制, 3轮外循环)
+delta_fine = 0.005;          % 精化步长 (与论文Stage 2一致)
+search_halfwin = 1.0;        % 搜索半径 ±1 样本
+outer_iters  = 3;            % 外循环 (精化 → 更新幅度 → 更新残差)
+tau_nomp_refined = tau_nomp_coarse;
+amps_nomp = amps_tmp;
+
+% 初始化残差 (减去所有路径的当前估计)
+residual_nomp = y_rx;
+for ll = 1:L_paths
+    s_l = fractional_delay_shift(s_tx_base, tau_nomp_refined(ll), N_rx);
+    residual_nomp = residual_nomp - amps_nomp(ll) * s_l;
+end
+
+for outer = 1:outer_iters
+    for l = 1:L_paths
+        % --- E-step: 重建当前路径的隐藏信号 ---
+        s_old = amps_nomp(l) * fractional_delay_shift(s_tx_base, tau_nomp_refined(l), N_rx);
+        x_l = residual_nomp + s_old;
+
+        % --- 局部细网格搜索 ---
+        tau_min = tau_nomp_refined(l) - search_halfwin;
+        tau_max = tau_nomp_refined(l) + search_halfwin;
+        tau_candidates = tau_min : delta_fine : tau_max;
+
+        best_corr = -inf;
+        best_tau = tau_nomp_refined(l);
+        for tc = 1:length(tau_candidates)
+            tau_test = tau_candidates(tc);
+            s_test = fractional_delay_shift(s_tx_base, tau_test, N_rx);
+            corr_test = abs(s_test' * x_l);
+            if corr_test > best_corr
+                best_corr = corr_test;
+                best_tau = tau_test;
+            end
+        end
+        tau_nomp_refined(l) = best_tau;
+
+        % --- 更新幅度与残差 ---
+        s_new = fractional_delay_shift(s_tx_base, best_tau, N_rx);
+        amps_nomp(l) = (s_new' * x_l) / (s_tx_base' * s_tx_base);
+        residual_nomp = x_l - amps_nomp(l) * s_new;
+    end
+end
+
+% Step 3: 最终联合最小二乘重估幅度
+A_nomp_refined = zeros(N_rx, L_paths);
+for l = 1:L_paths
+    A_nomp_refined(:, l) = fractional_delay_shift(s_tx_base, tau_nomp_refined(l), N_rx);
+end
+amps_nomp_refined = A_nomp_refined \ y_rx;
+est_delays_nomp = tau_nomp_refined;
+est_amps_nomp = amps_nomp_refined;
+residual_nomp = y_rx - A_nomp_refined * amps_nomp_refined;
+
+%% 8. 后处理：路径自动匹配 (解决乱序问题)
+match_delays = zeros(L_paths, 6); match_amps = zeros(L_paths, 6); % [Int, Frac, MF, OMP, SBL, NOMP]
 
 for i = 1:L_paths
     [~, id1] = min(abs(est_delays_int - true_delays(i))); match_delays(i,1) = est_delays_int(id1); match_amps(i,1) = est_amps_int(id1);
@@ -189,21 +259,22 @@ for i = 1:L_paths
     [~, id3] = min(abs(est_delays_mf - true_delays(i))); match_delays(i,3) = est_delays_mf(id3); match_amps(i,3) = est_amps_mf(id3);
     [~, id4] = min(abs(est_delays_omp - true_delays(i))); match_delays(i,4) = est_delays_omp(id4); match_amps(i,4) = est_amps_omp(id4);
     [~, id5] = min(abs(est_delays_sbl - true_delays(i))); match_delays(i,5) = est_delays_sbl(id5); match_amps(i,5) = est_amps_sbl(id5);
+    [~, id6] = min(abs(est_delays_nomp - true_delays(i))); match_delays(i,6) = est_delays_nomp(id6); match_amps(i,6) = est_amps_nomp(id6);
 end
 
-%% 8. 控制台输出全维度对比表
+%% 9. 控制台输出全维度对比表
 fprintf('\n=================================================================================\n');
 fprintf(' 多径时延估计算法全面性能对比 (基于 %d 次采样, 信噪比相关噪音标准差=%.2f)\n', N_rx, noise_std);
 fprintf('=================================================================================\n');
 
 for i = 1:L_paths
     t_tau = true_delays(i); t_mag = abs(true_amps(i)); t_phase = angle(true_amps(i));
-    
+
     fprintf('【多径 %d】 理论 CRB(时延) = %.5f\n', i, std_CRB(i));
     fprintf('  [真实值]     时延: %6.2f | 幅度: %5.3f | 相位: %6.3f rad\n', t_tau, t_mag, t_phase);
-    
-    alg_names = {'整数 SAGE', '小数 SAGE', 'MF (网格0.1)', 'OMP(网格0.1)', 'SBL(网格0.1)'};
-    for j = 1:5
+
+    alg_names = {'整数 SAGE', '小数 SAGE', 'MF (网格1.0)', 'OMP(网格1.0)', 'SBL(网格1.0)', 'NOMP'};
+    for j = 1:6
         tau = match_delays(i,j);   e_tau = abs(tau - t_tau);
         mag = abs(match_amps(i,j)); e_mag = abs(mag - t_mag);
         pha = angle(match_amps(i,j));e_pha = abs(wrapToPi(pha - t_phase));
@@ -214,21 +285,22 @@ for i = 1:L_paths
 end
 
 fprintf('最终残差能量对比:\n');
-fprintf('  整数 SAGE : %.4f | 小数 SAGE : %.4f | MF : %.4f | OMP : %.4f | SBL : %.4f\n', ...
-    norm(residual_int)^2, norm(residual_frac)^2, norm(residual_mf)^2, norm(residual_omp)^2, norm(residual_sbl)^2);
+fprintf('  整数 SAGE : %.4f | 小数 SAGE : %.4f | MF : %.4f | OMP : %.4f | SBL : %.4f | NOMP : %.4f\n', ...
+    norm(residual_int)^2, norm(residual_frac)^2, norm(residual_mf)^2, norm(residual_omp)^2, norm(residual_sbl)^2, norm(residual_nomp)^2);
 fprintf('=================================================================================\n');
 
-%% 9. 学术级对比绘图
+%% 10. 学术级对比绘图
 
-% 图1：残差信号对比 (揭示“路径分裂”现象的核心图)
+% 图1：残差信号对比 (揭示”路径分裂”现象的核心图)
 figure('Color', 'w', 'Position', [100 100 1200 400]);
-plot(abs(residual_int), 'k', 'LineWidth', 1); hold on;
-plot(abs(residual_omp), 'm', 'LineWidth', 1);
-plot(abs(residual_sbl), 'c', 'LineWidth', 1);
-plot(abs(residual_frac), 'b', 'LineWidth', 1.5);
+plot(abs(residual_int), 'k-', 'LineWidth', 1); hold on;
+plot(abs(residual_omp), 'm--', 'LineWidth', 1);
+plot(abs(residual_sbl), 'c-.', 'LineWidth', 1);
+plot(abs(residual_frac), 'b-', 'LineWidth', 1.5);
+plot(abs(residual_nomp), '-', 'Color', [0.85 0.33 0.1], 'LineWidth', 1.5);
 title('最终残差信号 (Residual Error) 对比', 'FontSize', 12);
 xlabel('时间 (采样点)', 'FontSize', 11); ylabel('残差绝对值', 'FontSize', 11);
-legend('整数 SAGE (基线)', 'OMP', 'SBL', '小数 SAGE (本文)', 'Location', 'best');
+legend('整数 SAGE (基线)', 'OMP', 'SBL', '小数 SAGE (本文)', 'NOMP', 'Location', 'best');
 grid on; xlim([30, 250]);
 
 % 图2：冲激响应提取大图
@@ -243,7 +315,7 @@ ax_main = axes('Position', pos_main);
 hold(ax_main, 'on'); 
 draw_all_stems(ax_main, true_delays, true_amps, match_delays, match_amps);
 xlabel(ax_main, 'Delay (Sample)', 'FontSize', 11); ylabel(ax_main, 'Amptitude |\alpha|', 'FontSize', 11);
-legend(ax_main, 'True (Continuous)', 'Int SAGE', 'Frac SAGE', 'MF (Grid)', 'OMP (Grid)', 'SBL (Grid)', ...
+legend(ax_main, 'True (Continuous)', 'Int SAGE', 'Frac SAGE', 'MF (Grid)', 'OMP (Grid)', 'SBL (Grid)', 'NOMP', ...
     'Location', 'northeast', 'FontSize', 9, 'Box','off');
 grid(ax_main, 'on'); xlim(ax_main, [40, 220]); ylim(ax_main, [0, 1.2]);
 set(ax_main, 'FontName', 'Times New Roman', 'FontSize', 10);
@@ -271,19 +343,87 @@ ax_sub3 = axes('Position', pos_sub3); hold(ax_sub3, 'on'); box(ax_sub3, 'on'); g
 draw_all_stems(ax_sub3, true_delays, true_amps, match_delays, match_amps);
 xlim(ax_sub3, box_xlim3); ylim(ax_sub3, box_ylim3);
 
+% 保存图2（冲激响应）为论文用图
+saveas(fig, 'results/fig_09_channel_stem_mat.png');
 
-%% --- 局部辅助绘图函数 (解决柱状图重叠问题) ---
+%% 11. RMSE 汇总对比图 (替换论文 fig_08)
+alg_names_plot = {'Int SAGE', 'Frac SAGE', 'MF', 'OMP', 'SBL', 'NOMP'};
+err_matrix = abs(match_delays - true_delays');           % L_paths × 6
+rmse_per_alg = sqrt(mean(err_matrix.^2, 1));            % 1 × 6, 综合三条路径的RMSE
+
+figure('Color', 'w', 'Position', [100 100 1100 550]);
+
+% --- 子图1: 各算法综合RMSE柱状图 ---
+subplot(1,2,1);
+colors_bar = {[0.3 0.3 0.3], [0 0.45 0.74], [0.47 0.67 0.19], [0.64 0.08 0.18], [0 0.75 0.75], [0.85 0.33 0.1]};
+b = bar(rmse_per_alg, 'FaceColor', 'flat', 'EdgeColor', 'w', 'LineWidth', 0.8);
+for k = 1:6, b.CData(k,:) = colors_bar{k}; end
+set(gca, 'XTickLabel', alg_names_plot, 'FontSize', 10, 'FontName', 'Times New Roman');
+xtickangle(25);
+ylabel('Delay RMSE (samples)', 'FontSize', 11);
+title(sprintf('Overall RMSE (3 paths, SNR~26 dB)'), 'FontWeight', 'bold', 'FontSize', 11);
+grid on; box on;
+
+% 标注: 柱顶 = RMSE值, 柱内 = 相对Int SAGE的提升百分比
+rmse_baseline = rmse_per_alg(1);  % Int SAGE作为基线
+for k = 1:6
+    % 柱顶标注RMSE绝对值
+    text(k, rmse_per_alg(k)*1.15, sprintf('%.3f', rmse_per_alg(k)), ...
+        'HorizontalAlignment', 'center', 'FontSize', 9, 'FontWeight', 'bold', ...
+        'Color', colors_bar{k});
+    % 柱内标注改善百分比 (相对Int SAGE)
+    impr_pct = (rmse_baseline - rmse_per_alg(k)) / rmse_baseline * 100;
+    if k == 1
+        label_str = '(baseline)';
+        txt_color = 'w';
+    elseif impr_pct > 0
+        label_str = sprintf('%.1f%%', impr_pct);
+        txt_color = 'w';
+    else
+        label_str = sprintf('%.1f%%', impr_pct);
+        txt_color = 'y';
+    end
+    text(k, rmse_per_alg(k)*0.45, label_str, ...
+        'HorizontalAlignment', 'center', 'FontSize', 8.5, 'FontWeight', 'bold', ...
+        'Color', txt_color);
+end
+% CRB参考线
+crb_avg = mean(std_CRB);
+hold on; yline(crb_avg, 'r--', 'CRB', 'LineWidth', 1.5);
+
+% --- 子图2: 逐径时延误差对比 ---
+subplot(1,2,2);
+alg_colors = lines(6);
+for alg = 1:6
+    semilogy(1:L_paths, err_matrix(:,alg)', 'o-', 'LineWidth', 1.8, 'MarkerSize', 9, ...
+        'Color', colors_bar{alg}, 'MarkerFaceColor', colors_bar{alg});
+    hold on;
+end
+% CRB per path
+semilogy(1:L_paths, std_CRB, 'r--', 'LineWidth', 2, 'Marker', 's', 'MarkerSize', 10);
+set(gca, 'XTick', 1:L_paths, 'XTickLabel', {'Path 1 (50.43)', 'Path 2 (60.66)', 'Path 3 (200.51)'}, ...
+    'FontSize', 9, 'FontName', 'Times New Roman');
+xtickangle(12);
+ylabel('Delay Error (samples)', 'FontSize', 11);
+legend([alg_names_plot, {'CRB'}], 'Location', 'northeastoutside', 'FontSize', 8);
+title('Per-Path Delay Estimation Error', 'FontWeight', 'bold', 'FontSize', 11);
+grid on; box on;
+
+saveas(gcf, 'results/fig_08_rmse_vs_snr_mat.png');
+
+fprintf('\n>>> 图片已保存至 results/ 目录\n');
 function draw_all_stems(ax, t_tau, t_amp, m_tau, m_amp)
-    lw = 1.5; 
+    lw = 1.5;
     % 为了视觉可辨识度，在X轴上施加微小偏移（仅用于绘图，不改变真实数据）
     % 真实信道
-    stem(ax, t_tau, abs(t_amp), 'r', 'LineWidth', 2, 'Marker', 'o'); 
-    % 算法 1-5 (Int, Frac, MF, OMP, SBL)
+    stem(ax, t_tau, abs(t_amp), 'r', 'LineWidth', 2, 'Marker', 'o');
+    % 算法 1-6 (Int, Frac, MF, OMP, SBL, NOMP)
     stem(ax, m_tau(:,1) - 0.15, abs(m_amp(:,1)), 'k', 'LineWidth', lw, 'Marker', 's');
-    stem(ax, m_tau(:,2)       , abs(m_amp(:,2)), 'b--', 'LineWidth', 2, 'Marker', '^');
-    stem(ax, m_tau(:,3) + 0.15, abs(m_amp(:,3)), 'g', 'LineWidth', lw, 'Marker', '*');
-    stem(ax, m_tau(:,4) + 0.30, abs(m_amp(:,4)), 'm', 'LineWidth', lw, 'Marker', 'd');
-    stem(ax, m_tau(:,5) - 0.30, abs(m_amp(:,5)), 'c', 'LineWidth', lw, 'Marker', 'x');
+    stem(ax, m_tau(:,2)       , abs(m_amp(:,2)), 'b-', 'LineWidth', 2, 'Marker', '^');
+    stem(ax, m_tau(:,3) + 0.15, abs(m_amp(:,3)), 'g--', 'LineWidth', lw, 'Marker', '*');
+    stem(ax, m_tau(:,4) + 0.30, abs(m_amp(:,4)), 'm--', 'LineWidth', lw, 'Marker', 'd');
+    stem(ax, m_tau(:,5) - 0.30, abs(m_amp(:,5)), 'c-.', 'LineWidth', lw, 'Marker', 'x');
+    stem(ax, m_tau(:,6) + 0.45, abs(m_amp(:,6)), 'Color', [0.85 0.33 0.1], 'LineWidth', 1.8, 'Marker', 'p', 'MarkerSize', 8);
 end
 
 %% --- 辅助函数：严格基于 FFT 的分数延迟 ---

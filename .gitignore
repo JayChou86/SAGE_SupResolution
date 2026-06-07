@@ -1,46 +1,12 @@
+﻿# LaTeX auxiliary
+*.aux
+*.log
+*.out
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*~
+
 # Python
 __pycache__/
-*.py[cod]
-*.so
-*.egg-info/
-dist/
-build/
-.eggs/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Virtual environments
-venv/
-.venv/
-env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# MATLAB workspace backups
-仿真数据/
-
-# Other MATLAB artifacts
-data_mtkl1.mat
-data_mtkl2*.mat
-*.fig
-*.jpg
-剪贴板文本.txt
-SAGE_SupResolution*.docx
-*.iso
-
-# MATLAB temp
-*.asv
-*.m~
-
-# Results (regeneratable)
-# results/*.png
-# results/*.npz
+*.pyc
