@@ -161,7 +161,7 @@ def _refine_newton(x_l, s_base, tau_coarse, N_rx, Es, max_iter=3):
         np.arange(-int(np.floor(N_rx / 2)), 0),
     ])
     w = 2 * np.pi * k_vec / N_rx
-    Sp = (1j * w) * S_f
+    Sp = (-1j * w) * S_f     # conj(Sp) = jω·conj(S) → correct C'(τ)
     Sd = -(w ** 2) * S_f
 
     tau = tau_coarse
@@ -308,29 +308,43 @@ def algo_NOMP(
 
 
 def _newton_refine(r_win, s_base, tau, max_iters=3):
-    """频域 Newton 精化: 最大化 |⟨s(τ), r_win⟩|²"""
+    """Hann-窗 Newton 精化: 最大化 |⟨s(τ), r_win⟩|²
+
+    消除循环FFT伪影的关键: 对截断窗口 r_win 和补零后的 s_base 同时施加
+    Hann 窗, 使信号在窗口边界平滑衰减至零。这消除了 FFT 视图中由截断引入的
+    虚假高频分量, 是 NOMP 原文 (Mamandipoor 2016) 推荐的标准做法。
+    """
     N_win = len(r_win)
-    R_f = fft(r_win)
-    S_w = fft(s_base, n=N_win)
+    N_seq = len(s_base)
+
+    # Hann 窗: 消除边界不连续性 → 消除循环FFT高频伪影
+    window = np.hanning(N_win)
+
+    R_f = fft(r_win * window)
+    S_w = fft(s_base, n=N_win)           # 补零到窗口长度
+    S_w = S_w * np.sqrt(np.mean(window**2))  # 能量补偿
+
     k_w = np.concatenate([
-        np.arange(0, int(np.ceil(N_win/2))),
-        np.arange(-int(np.floor(N_win/2)), 0),
+        np.arange(0, int(np.ceil(N_win / 2))),
+        np.arange(-int(np.floor(N_win / 2)), 0),
     ])
-    w = 2*np.pi*k_w/N_win
-    Sp = (1j*w)*S_w
-    Sd = -(w**2)*S_w
+    omega = 2 * np.pi * k_w / N_win
+    Sp = (-1j * omega) * S_w        # conj(Sp)=jω·conj(S) → C'(τ)
+    Sd = -(omega ** 2) * S_w        # conj(Sd)=-ω²·conj(S) → C''(τ)
 
     for _ in range(max_iters):
-        ph = np.exp(1j*w*tau)
-        c = np.sum(np.conj(S_w)*R_f*ph)/N_win
-        cp = np.sum(np.conj(Sp)*R_f*ph)/N_win
-        cd = np.sum(np.conj(Sd)*R_f*ph)/N_win
-        fp = 2*np.real(np.conj(c)*cp)
-        fd = 2*np.real(np.conj(c)*cd + np.abs(cp)**2)
+        ph = np.exp(1j * omega * tau)
+        c  = np.sum(np.conj(S_w) * R_f * ph) / N_win
+        cp = np.sum(np.conj(Sp)  * R_f * ph) / N_win
+        cd = np.sum(np.conj(Sd)  * R_f * ph) / N_win
+
+        fp = 2 * np.real(np.conj(c) * cp)
+        fd = 2 * (np.abs(cp) ** 2 + np.real(np.conj(c) * cd))
+
         if abs(fd) < 1e-12:
             break
-        delta = np.clip(fp/fd, -0.5, 0.5)
-        tau = max(0.0, min(float(N_win), tau-delta))
+        delta = np.clip(fp / fd, -0.5, 0.5)
+        tau = max(0.0, min(float(N_win - N_seq), tau - delta))
         if abs(delta) < 1e-6:
             break
     return tau
