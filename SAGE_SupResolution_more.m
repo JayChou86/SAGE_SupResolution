@@ -141,18 +141,20 @@ gamma_tol = 1e-6;
 
 for iter = 1:30 % 增加迭代次数保证收敛
     Gamma = diag(gamma);
-    % 【修复2】加入微小的正则化对角加载(1e-4)，防止高相干字典导致矩阵病态
-    Sigma_y = A_dict * Gamma * A_dict' + sigma2 * eye(N_rx); 
-    
-    % 稳定求逆
-    inv_Sigma_y = inv(Sigma_y + 1e-6 * eye(N_rx));
-    
-    % 均值更新 (提取出的复数幅度)
-    mu = Gamma * A_dict' * inv_Sigma_y * y_rx;
-    
-    % 协方差更新 (利用快速矩阵乘法提取对角线，避免全量计算)
-    % diag(A' * inv_Sigma_y * A)
-    diag_term = sum(A_dict' .* (A_dict' * inv_Sigma_y), 2); 
+    % 【修复2】Woodbury加速: 将N_rx×N_rx求逆降为N_grid×N_grid
+    % (sigma2*I + A*Gamma*A')^{-1} = I/sigma2 - A*inv(inv(Gamma)+A'*A/sigma2)*A'/sigma2^2
+    G_inv = diag(1./(gamma + 1e-12));  % inv(Gamma) 对角矩阵
+    V = G_inv + (A_dict' * A_dict) / sigma2;  % N_grid × N_grid (远小于N_rx × N_rx)
+    V_reg = V + 1e-6 * eye(N_grid);
+    inv_Sigma_y_A = (A_dict - A_dict * (V_reg \ (A_dict' * A_dict)) / sigma2) / sigma2;
+    inv_Sigma_y_y = (y_rx - A_dict * (V_reg \ (A_dict' * y_rx)) / sigma2) / sigma2;
+
+    % 均值更新
+    mu = Gamma * A_dict' * inv_Sigma_y_y;
+
+    % 协方差更新: diag(A' * inv_Sigma_y * A)
+    ATA_s2 = (A_dict' * A_dict) / sigma2;
+    diag_term = diag(ATA_s2 - ATA_s2 * (V_reg \ ATA_s2)); 
     
     % 更新超参数
     gamma_new = abs(mu).^2 + gamma - gamma.^2 .* real(diag_term);
