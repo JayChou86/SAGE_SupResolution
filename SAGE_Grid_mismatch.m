@@ -8,8 +8,8 @@ load('data475.mat');
 y_raw_orig = sig_rev_m(:); 
 s_tx_orig  = sig_bd_m(:);  
 
-% 定义要扫描的降采样倍数 M = 1, ..., 6
-down_ratios = 1:6;
+% 定义要扫描的降采样倍数 M = 1,2,...,16 (覆盖过采样→欠采样全区间)
+down_ratios = 1:16;
 
 num_tests = length(down_ratios);
 
@@ -106,7 +106,7 @@ for test_idx = 1:num_tests
 end
 
 %% 绘制学术级图表：栅格失配敏感度 (匹配Python fig_12风格)
-figure('Name', 'Grid Mismatch Sensitivity', 'Color', 'w', 'Position', [150, 150, 800, 550]);
+figure('Name', 'Grid Mismatch Sensitivity', 'Color', 'w', 'Position', [50, 150, 1200, 550]);
 
 % --- 左轴: MSE (semilogy) ---
 yyaxis left;
@@ -130,7 +130,7 @@ for i = 1:length(improvement_list)
         bar_colors(i,:) = [0 0.39 0];     % darkgreen
     end
 end
-b = bar(down_ratios, improvement_list, 0.3, 'FaceColor', 'flat', ...
+b = bar(down_ratios, improvement_list, 0.5, 'FaceColor', 'flat', ...
     'EdgeColor', [0.33 0.33 0.33], 'LineWidth', 0.8, 'FaceAlpha', 0.5);
 b.CData = bar_colors;
 ylabel('Improvement (%)', 'FontSize', 12, 'FontWeight', 'bold');

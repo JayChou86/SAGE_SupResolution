@@ -110,7 +110,7 @@ Existing approaches to overcome grid mismatch fall into three categories, each w
 
 \textbf{Dictionary refinement.} Constructing a dictionary of candidate delays at sub-sample spacing (e.g., $0.83T_s$, yielding 230~atoms for our parameter range) and applying matched filter (MF), orthogonal matching pursuit (OMP), or sparse Bayesian learning (SBL)~\cite{wipf2004} shifts the discretization error to a finer scale but does not eliminate it. The fundamental trade-off persists: halving the grid spacing doubles the dictionary size and quadruples the memory and computation for SBL's $\bigO(N_{\text{grid}}^2)$ operations. Our measurements (Table~\ref{tab:complexity}) confirm that MF achieves RMSE 0.283 at 0~dB---better than integer SAGE's 3.154 but still an order of magnitude above the CRB of 0.023.
 
-\textbf{Gridless compressive sensing.} Atomic norm minimization (ANM)~\cite{tang2013} and subspace methods such as Root-MUSIC~\cite{schmidt1986} and ESPRIT~\cite{roy1989} operate directly in the continuous parameter domain, avoiding explicit gridding. However, ANM requires solving semidefinite programs with $\bigO(N^3)$ complexity, and subspace methods rely on eigen-decomposition of the sample covariance matrix, which is sensitive to source correlation and requires sufficient snapshots. Our ESPRIT implementation (Table~\ref{tab:complexity}) achieves only \SI{15.5}{ms} per trial but yields RMSE inferior to Frac~SAGE, confirming that frequency-domain subspace methods are ill-suited to the single-snapshot, correlated-path regime of UWA channel sounding.
+\textbf{Gridless compressive sensing.} Atomic norm minimization (ANM)~\cite{tang2013} and subspace methods such as Root-MUSIC~\cite{schmidt1986} operate directly in the continuous parameter domain, avoiding explicit gridding. However, ANM requires solving semidefinite programs with $\bigO(N^3)$ complexity, and subspace methods rely on eigen-decomposition of the sample covariance matrix, which is sensitive to source correlation and requires sufficient snapshots---making them ill-suited to the single-snapshot, correlated-path regime of UWA channel sounding.
 
 \textbf{Interpolation-based refinement.} Applying quadratic or sinc interpolation to the correlation peak in the M-step is computationally lightweight---$\bigO(1)$ per iteration. However, existing interpolation-augmented estimators~\cite{ref_interp1,ref_interp2} lack a rigorous performance analysis, leaving three questions unresolved: (i)~under what conditions is the interpolation exact? (ii)~what is the closed-form variance as a function of SNR and fractional offset $\delta$? (iii)~how far is the estimator from the CRB? Without answers, interpolation remains an ad-hoc heuristic whose reliability cannot be guaranteed.
 
@@ -209,7 +209,7 @@ The proposed Fractional SAGE replaces the integer-constrained M-step of conventi
 \item \textbf{Stage~2 (Local grid refinement, $\bigO(1/\Delta)$):} Search a fine grid of spacing $\Delta = 0.005$~samples within $[\hat{\tau}^{(1)}_l \pm 0.5]$, evaluating $|\inner{s(t-\tau)}{\hb{x}_l}|^2$ at each candidate via~\eqref{eq:fracshift} and selecting the maximizer. This corrects the residual error from the quadratic approximation underlying Stage~1.
 \end{itemize}
 
-The two stages are complementary: Stage~1 provides a computationally trivial coarse estimate whose error is bounded by the quartic term in the autocorrelation function ($\sim 10^{-3}$ samples for $|\delta| < 0.4$), and Stage~2 eliminates this residual at the cost of $\sim$200 correlation evaluations (reducible to $\sim$40 via coarse-to-fine acceleration, Section~\ref{sec:accelerate}).
+The two stages are complementary: Stage~1 provides a computationally trivial coarse estimate whose deterministic bias (quantified in Fig.~\ref{fig:bias}) reaches approximately $-0.29$~samples at $|\delta|\approx0.4$ and vanishes at $\delta=0,\pm0.5$; Stage~2 eliminates this residual at the cost of $\sim$200 correlation evaluations (reducible to $\sim$40 via coarse-to-fine acceleration, Section~\ref{sec:accelerate}).
 
 \subsection{Stage~1---Parabolic Interpolation}
 
@@ -246,7 +246,7 @@ where the constraint is enforced by clipping: if $|y_{-1} - 2y_0 + y_{+1}| < 10^
 
 \subsection{Stage~2---Local Grid Refinement}
 
-While the parabolic estimator is exact under a pure quadratic autocorrelation, the true signal autocorrelation contains higher-order terms---$R(\tau) = 1 - c\tau^2 + c_4\tau^4 + \bigO(\tau^6)$---that introduce a deterministic bias of order $10^{-3}$ samples (quantified in Fig.~\ref{fig:bias}). Stage~2 eliminates this residual by an exhaustive search on a fine local grid:
+While the parabolic estimator is exact under a pure quadratic autocorrelation, the true signal autocorrelation contains higher-order terms that introduce a deterministic bias (quantified in Fig.~\ref{fig:bias}), reaching approximately $-0.29$~samples at $|\delta|\approx0.4$ for the 511-point QPSK waveform. Stage~2 eliminates this residual by an exhaustive search on a fine local grid:
 \begin{equation}
 \hat{\tau}_l^{(2)} = \argmax_{\tau \in \mathcal{T}} \abs{\inner{s(t-\tau)}{\hb{x}_l^{(i)}}}^2
 \label{eq:stage2}
@@ -458,7 +458,7 @@ Substituting $\SNR = |\alpha|^2/N_0$ yields~\eqref{eq:thm1}. The $-4\delta$ term
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{results/fig_07_bias_efficiency.png}
-\caption{(a) Empirical bias vs.\ $\delta$ (SNR=40~dB). The bias is below $10^{-3}$~samples for $|\delta|<0.4$, confirming asymptotic unbiasedness. (b) CRB efficiency ratio. The parabolic estimator achieves $\approx 93\%$ of the CRB (Theorem~2).}
+\caption{Performance of the parabolic interpolation estimator (Stage~1). (a)~Deterministic bias $\hat{\delta}-\delta$ computed from the actual autocorrelation $|R(\tau)|^2$ of the 511-point QPSK waveform (noiseless). The bias is zero at $\delta=0$ and $\delta=\pm0.5$ (by symmetry and clipping), reaches approximately $-0.29$~samples at $|\delta|\approx0.4$, and is always negative (the parabolic fit systematically underestimates the offset). This deterministic bias is the residual error that Stage~2 eliminates. (b)~CRB efficiency ratio $\mathrm{Var}(\hat{\delta})/\mathrm{CRB}$ vs.\ SNR at $\delta=0.25$. The ratio is independent of SNR because both the numerator (Theorem~1) and denominator (CRB) scale as $1/\mathrm{SNR}$. For a 511-point QPSK waveform with curvature parameter $c=1.63$, the asymptotic efficiency is $0.93$, meaning the parabolic estimator extracts 93\% of the available Fisher information from only three correlation samples. The remaining 7\% is recovered by Stage~2 refinement.}
 \label{fig:bias}
 \end{figure*}
 
@@ -634,7 +634,7 @@ Path~2 is the most challenging: it has the lowest amplitude (half of Path~1), is
 
 \textbf{NOMP} achieves RMSE = 0.146---its best per-path result and notably better than MF/OMP/SBL on this path. The Hann-windowed Newton refinement, operating on a clean window around $\tau \approx 60.7$, successfully pulls the estimate toward the true continuous delay. However, the absence of iterative interference cancellation (the outer SAGE loop) limits further improvement. This result validates the Newton fix (Section~\ref{sec:accelerate}) while confirming that Newton refinement alone cannot substitute for the E-step interference cancellation that distinguishes Frac~SAGE.
 
-\textbf{SBL vs.\ OMP comparison:} SBL (0.163) slightly outperforms OMP (0.166) on this path. The Bayesian framework's automatic relevance determination partially suppresses the spurious correlation component from Path~1's residual, providing a marginal benefit over OMP's greedy atom selection. However, both remain an order of magnitude above the CRB, confirming that \textit{no dictionary-based method can match iterative EM interference cancellation for closely-spaced paths}.
+\textbf{SBL vs.\ OMP comparison:} SBL (0.163) slightly outperforms OMP (0.166) on this path. The Bayesian framework's automatic relevance determination partially suppresses the spurious correlation component from Path~1's residual, providing a marginal benefit over OMP's greedy atom selection. However, both remain an order of magnitude above the CRB, confirming that \textit{no dictionary-based method can match iterative EM interference cancellation for closely-spaced paths}. A further observation reinforces Frac~SAGE's advantage on this path: its \textit{phase} RMSE falls \textit{below} the single-path CRB at $\SNR \ge -5$~dB (ratio 0.86--0.96$\times$). This is possible because the phase CRB assumes isolated-path estimation, whereas the SAGE E-step jointly estimates Paths~1 and~2, effectively pooling information across paths. The interference cancellation reduces phase variance below the single-path bound---the same shrinkage mechanism that enables delay super-efficiency (Section~\ref{sec:results}).
 
 \subsubsection{Path~3 --- The Isolated Path: Pure Grid-Mismatch Benchmark ($\tau_3 = 200.25$, $|\alpha_3| = 0.8$)}
 
@@ -733,19 +733,18 @@ Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} isolate each component's co
 \toprule
 Method & FLOPs & Time (ms) & vs Int \\
 \midrule
-Int SAGE & $\bigO(L I N_r N_s)$ & \textbf{9.8} & 1$\times$ \\
-\textbf{Frac SAGE} (full) & $\bigO(L I (N_r \log N_r + N_r/\Delta))$ & 665.7 & 68$\times$ \\
-\textbf{Frac SAGE} (c2f) & $\bigO(L I (N_r \log N_r + 40))$ & \textbf{122.0} & 12$\times$ \\
-MF (230) & $\bigO(N_{\text{grid}} N_r)$ & 221.9 & 23$\times$ \\
-OMP & $\bigO(L N_{\text{grid}} N_r)$ & \textbf{4.8} & 0.5$\times$ \\
-NOMP & $\bigO(L N_r N_{\text{grid}})$ & 7.9 & 0.8$\times$ \\
-SBL & $\bigO(I_{\text{EM}} N_{\text{grid}}^2)$ & 435.2 & 44$\times$ \\
-ESPRIT & $\bigO(N_r^3)$ (SVD) & 15.5 & 1.6$\times$ \\
+Int SAGE & $\bigO(L I N_r N_s)$ & \textbf{11.2} & 1$\times$ \\
+\textbf{Frac SAGE} (full) & $\bigO(L I (N_r \log N_r + N_r/\Delta))$ & 601.7 & 54$\times$ \\
+\textbf{Frac SAGE} (c2f) & $\bigO(L I (N_r \log N_r + 40))$ & \textbf{109.5} & 10$\times$ \\
+MF (381) & $\bigO(N_{\text{grid}} N_r)$ & 2.2 & 0.2$\times$ \\
+OMP & $\bigO(L N_{\text{grid}} N_r)$ & \textbf{6.9} & 0.6$\times$ \\
+NOMP & $\bigO(L N_r N_{\text{grid}})$ & 7.2 & 0.6$\times$ \\
+SBL & $\bigO(I_{\text{EM}} N_{\text{grid}}^2)$ & 1804.9 & 161$\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:complexity} reports measured runtime alongside theoretical FLOPs. \textbf{Frac SAGE's 279$\times$ accuracy advantage over Int SAGE comes at a 68$\times$ computational cost}---a favorable trade-off: accuracy improves by two orders of magnitude while computation remains sub-second. With coarse-to-fine acceleration, the cost drops to 12$\times$ (\SI{122}{ms}), well within real-time UWA constraints.
+Table~\ref{tab:complexity} reports measured runtime alongside theoretical FLOPs (grid resolution 0.5~samples, 381 dictionary atoms). Int~SAGE is the fastest (\SI{11.2}{ms}) but suffers from grid mismatch. Frac~SAGE achieves a two-order-of-magnitude accuracy improvement at a \textbf{54$\times$ computational cost} (\SI{602}{ms}), remaining sub-second and within real-time constraints. With coarse-to-fine acceleration, the cost drops to 10$\times$ (\SI{110}{ms}). SBL is the slowest (\SI{1805}{ms}) due to its $\bigO(N_{\text{grid}}^2)$ Woodbury inversion on the 381-atom dictionary.
 
 % ===========================================================================
 % SECTION 6: SEA TRIAL VALIDATION
@@ -897,9 +896,6 @@ G.~Tang, B.~N.~Bhaskar, P.~Shah, and B.~Recht, ``Compressed sensing off the grid
 
 \bibitem{schmidt1986}
 R.~Schmidt, ``Multiple emitter location and signal parameter estimation,'' \textit{IEEE Trans. Antennas Propag.}, vol.~34, no.~3, pp.~276--280, 1986.
-
-\bibitem{roy1989}
-R.~Roy and T.~Kailath, ``ESPRIT---Estimation of signal parameters via rotational invariance techniques,'' \textit{IEEE Trans. Acoust. Speech Signal Process.}, vol.~37, no.~7, pp.~984--995, 1989.
 
 \bibitem{ref_interp1}
 {[}Additional reference needed---sub-sample interpolation for delay estimation{]}.
