@@ -685,12 +685,12 @@ Viewing the results \textit{across} paths reveals each algorithm's characteristi
 
 A single-trial channel estimation at $\SNR = 10$~dB visually confirms the per-path analysis. Fig.~\ref{fig:stem} shows the estimated channel impulse response for all six algorithms: Integer SAGE (black squares) places both Path~1 and Path~2 near $\tau=50$ (path masking), while Fractional SAGE (blue triangles) correctly resolves all three paths at their true continuous delays. Dictionary methods (MF, OMP, SBL) place Path~3 at either 200.0 or 200.5, visibly confirming the 0.25-sample quantization floor. NOMP (orange pentagons) resolves Path~3 to $\sim$200.24 but struggles with the closely-spaced pair due to conflict-detection misfires.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{results/fig_09_channel_stem_mat.png}
+\includegraphics[width=\columnwidth]{results/fig_09_channel_stem_mat.png}
 \caption{Single-trial channel impulse response estimation (SNR=10~dB, grid=0.5). Main panel: full delay range. Sub-panels: per-path zoom views. Integer SAGE (black squares) misidentifies Path~2; dictionary methods (MF/OMP/SBL) exhibit the 0.25-sample grid bias on Path~3; Fractional SAGE (blue triangles) correctly estimates all three paths at their true continuous delays.}
 \label{fig:stem}
-\end{figure*}
+\end{figure}
 
 \subsection{Ablation Study}
 
@@ -754,10 +754,10 @@ A natural question is whether a sufficiently fine dictionary can match Fractiona
 \centering
 \caption{Grid Resolution Sensitivity: Delay RMSE at \SI{0}{dB} SNR (200 MC trials)}
 \label{tab:grid_compare}
-\small
+\footnotesize
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-Algorithm & grid$\,$=$\,$0.5 (381 atoms) & grid$\,$=$\,$0.1 (1901 atoms) & Ratio & Frac/OMP \\
+Algorithm & grid 0.5 & grid 0.1 & Ratio & vs Frac \\
 \midrule
 Integer SAGE & 2.890 & 2.920 & 1.01$\times$ & --- \\
 \textbf{Fractional SAGE} & \textbf{0.0251} & \textbf{0.0244} & 0.97$\times$ & \textbf{1.0$\times$} \\
@@ -780,7 +780,7 @@ Three conclusions emerge from Table~\ref{tab:grid_compare}:
 
 A related question is whether Frac~SAGE offers any benefit at low SNR, where thermal noise dominates. Table~\ref{tab:snr_regime} segments performance by SNR regime, showing that the advantage is SNR-dependent---and that this dependence is \textit{desirable}, not a weakness.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Fractional SAGE Advantage by SNR Regime (grid$\,$=$\,$0.1, 200 MC)}
 \label{tab:snr_regime}
@@ -797,7 +797,7 @@ $+10$ &  3.15 &  0.042 & 0.008 & \textbf{5.3$\times$ better} \\
 $+15$ &  3.35 &  0.041 & 0.005 & \textbf{8.2$\times$ better} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 The three SNR regimes have clear physical interpretations:
 
@@ -830,12 +830,12 @@ where $s(t)$ is the 511-point QPSK waveform and $\tau_i / M$ is the true delay i
 
 \subsection{Results and Analysis}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{results/watermark/mc_NOF1_paper.png}
+\includegraphics[width=\textwidth]{results/watermark/mc_NOF1_paper.png}
 \caption{Delay RMSE vs.\ SNR for Watermark NOF1 at $M=4$ and $M=8$ (8 snapshots $\times$ 100 MC = 800 trials per SNR point). Frac~SAGE tracks the CRB across all SNR, while dictionary methods (MF, OMP, SBL) plateau at the 0.5-sample grid-quantization floor ($\sim$0.17--0.20). At $M=4$, Int~SAGE suffers from path masking (RMSE $\sim$4).}
 \label{fig:watermark}
-\end{figure}
+\end{figure*}
 
 Fig.~\ref{fig:watermark} and Table~\ref{tab:wm} present the results. Three regimes are clearly visible:
 
@@ -845,7 +845,7 @@ Fig.~\ref{fig:watermark} and Table~\ref{tab:wm} present the results. Three regim
 
 \textbf{High SNR ($0$ to $+15$~dB):} Frac~SAGE continues tracking the CRB (RMSE $0.027 \to 0.005$ at $M=4$), while all other algorithms exhibit flat floors independent of SNR. The dictionary methods' RMSE of 0.17--0.20 matches the theoretical quantization floor $\Delta/\sqrt{12} \approx 0.144$ for a 0.5-sample grid, with the excess attributable to residual inter-path interference.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Delay RMSE at Representative SNR --- Watermark NOF1 (800 MC trials/SNR)}
 \label{tab:wm}
@@ -863,7 +863,7 @@ $M$ & SNR (dB) & Int SAGE & \textbf{Frac SAGE} & MF & OMP & NOMP & SBL \\
                     & $+15$ & 0.229 & \textbf{0.005} & 0.188 & 0.173 & 0.778 & 0.190 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \subsection{Key Findings}
 
