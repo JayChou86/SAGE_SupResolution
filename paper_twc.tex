@@ -66,7 +66,7 @@ Accurate estimation of multipath channel parameters---delay, amplitude, and phas
 
 We propose a two-stage fractional delay refinement strategy that augments the SAGE M-step with (i) three-point parabolic interpolation for coarse sub-sample delay estimation at $\bigO(1)$ cost, followed by (ii) a local grid search at 0.005-sample resolution within a $\pm 0.5$-sample window. The combined approach achieves continuous-valued delay estimation without constructing a fine-grid dictionary.
 
-We provide a rigorous theoretical foundation for the parabolic estimator: Lemma~1 establishes a structural invariance that guarantees exact noiseless recovery, Theorem~1 derives the closed-form asymptotic variance, and Theorem~2 proves that the estimator extracts 93\% of the available Fisher information from only three correlation samples.
+We provide a rigorous theoretical foundation for the parabolic estimator: Lemma~1 establishes a structural invariance that guarantees exact noiseless recovery, Theorem~1 derives the closed-form asymptotic variance, and Corollary~1 proves that the estimator extracts 93\% of the available Fisher information from only three correlation samples.
 
 Extensive Monte Carlo simulations (500 trials per SNR, 3-path channel, $-15$ to $+15$~dB) demonstrate that Fractional SAGE reduces delay estimation error by two orders of magnitude compared to integer-grid SAGE, achieves the Cram\'{e}r-Rao bound within a factor of 1.04--1.11 across the operating SNR range, and outperforms dictionary-based methods regardless of grid resolution. Per-path analysis reveals that the method's advantages are twofold: continuous-valued estimation eliminates the grid-quantization floor that limits discrete-grid methods on isolated paths, while iterative interference cancellation via the E-step resolves closely-spaced paths that dictionary methods cannot separate. An ablation study confirms that the local grid refinement stage (Stage~2) is the dominant accuracy contributor. Validation on the Watermark benchmark (NOF1 Norway fjord, 800 MC trials per SNR) demonstrates that Fractional SAGE achieves a 7.3$\times$ improvement over dictionary methods on real measured multipath channels, with near-CRB performance across all decimation factors. Coarse-to-fine acceleration yields a verified 4.5$\times$ speedup with negligible accuracy loss.
 \end{abstract}
@@ -108,11 +108,11 @@ is conventionally restricted to \textbf{integer values} of $\tau$. When the true
 
 Existing approaches to overcome grid mismatch fall into three categories, each with characteristic limitations.
 
-\textbf{Dictionary refinement.} Constructing a dictionary of candidate delays at sub-sample spacing (e.g., $0.83T_s$, yielding 230~atoms for our parameter range) and applying matched filter (MF), orthogonal matching pursuit (OMP), or sparse Bayesian learning (SBL)~\cite{wipf2004} shifts the discretization error to a finer scale but does not eliminate it. The fundamental trade-off persists: halving the grid spacing doubles the dictionary size and quadruples the memory and computation for SBL's $\bigO(N_{\text{grid}}^2)$ operations. Our measurements (Table~\ref{tab:complexity}) confirm that MF achieves RMSE 0.283 at 0~dB---better than integer SAGE's 3.154 but still an order of magnitude above the CRB of 0.023.
+\textbf{Dictionary refinement.} Constructing a dictionary of candidate delays at sub-sample spacing (e.g., $0.5T_s$, yielding 381~atoms for our parameter range) and applying matched filter (MF), orthogonal matching pursuit (OMP), or sparse Bayesian learning (SBL)~\cite{wipf2004} shifts the discretization error to a finer scale but does not eliminate it. The fundamental trade-off persists: halving the grid spacing doubles the dictionary size and quadruples the memory and computation for SBL's $\bigO(N_{\text{grid}}^2)$ operations. Our measurements (Table~\ref{tab:complexity}) confirm that MF achieves RMSE 0.187 at 0~dB---better than integer SAGE's 2.890 but still an order of magnitude above the CRB of 0.024.
 
-\textbf{Gridless compressive sensing.} Atomic norm minimization (ANM)~\cite{tang2013} and subspace methods such as Root-MUSIC~\cite{schmidt1986} operate directly in the continuous parameter domain, avoiding explicit gridding. However, ANM requires solving semidefinite programs with $\bigO(N^3)$ complexity, and subspace methods rely on eigen-decomposition of the sample covariance matrix, which is sensitive to source correlation and requires sufficient snapshots---making them ill-suited to the single-snapshot, correlated-path regime of UWA channel sounding.
+\textbf{Gridless compressive sensing.} Atomic norm minimization (ANM)~\cite{tang2013,chi2020} and subspace methods such as Root-MUSIC~\cite{schmidt1986} operate directly in the continuous parameter domain, avoiding explicit gridding. Recent advances in gridless super-resolution~\cite{chi2020,safari2021} have established recovery guarantees for time-frequency shift estimation from multiple measurement vectors. However, ANM requires solving semidefinite programs with $\bigO(N^3)$ complexity, and subspace methods rely on eigen-decomposition of the sample covariance matrix, which is sensitive to source correlation and requires sufficient snapshots---making them ill-suited to the single-snapshot, correlated-path regime of UWA channel sounding.
 
-\textbf{Interpolation-based refinement.} Applying quadratic or sinc interpolation to the correlation peak in the M-step is computationally lightweight---$\bigO(1)$ per iteration. However, existing interpolation-augmented estimators~\cite{ref_interp1,ref_interp2} lack a rigorous performance analysis, leaving three questions unresolved: (i)~under what conditions is the interpolation exact? (ii)~what is the closed-form variance as a function of SNR and fractional offset $\delta$? (iii)~how far is the estimator from the CRB? Without answers, interpolation remains an ad-hoc heuristic whose reliability cannot be guaranteed.
+\textbf{Interpolation-based refinement.} Applying quadratic or sinc interpolation to the correlation peak in the M-step is computationally lightweight---$\bigO(1)$ per iteration. Moddemeijer~\cite{moddemeijer1991} established the statistical properties of extremum estimation from sampled correlators, and Svilainis~\textit{et~al.}~\cite{svilainis2013} derived closed-form bias error expressions for parabolic, cosine, and Gaussian interpolation. However, these general results leave three SAGE-specific questions unresolved: (i)~under what conditions is the parabolic interpolation exact for the SAGE M-step correlation? (ii)~what is the closed-form variance as a function of SNR and the fractional offset $\delta$? (iii)~how far is the estimator from the CRB? Without answers, interpolation-based SAGE refinement remains an ad-hoc heuristic whose reliability cannot be guaranteed.
 
 \subsection{Contributions}
 
@@ -120,7 +120,7 @@ This paper establishes a rigorous foundation for fractional delay estimation wit
 
 \noindent\textbf{Two-Stage Fractional Delay Estimator.} We propose augmenting the SAGE M-step with (i)~three-point parabolic interpolation for coarse sub-sample delay estimation at $\bigO(1)$ cost, followed by (ii)~a local grid search at 0.005-sample resolution within a $\pm 0.5$-sample window (Section~\ref{sec:method}, Algorithm~1). The two stages are complementary: parabolic interpolation narrows the search region from the entire signal length to $\pm 0.5$ samples, and the fine grid search eliminates the residual bias from the quadratic approximation. The combined approach requires no dictionary construction and integrates seamlessly with existing SAGE implementations.
 
-\noindent\textbf{Theoretical Performance Guarantees.} We derive the closed-form bias-variance decomposition of the parabolic interpolation estimator (Section~\ref{sec:theory}). Lemma~1 establishes that the interpolation denominator is structurally invariant to the true fractional offset, guaranteeing exact recovery in the noiseless limit. Theorem~1 provides the asymptotic variance as a function of SNR and fractional offset. Theorem~2 proves that the estimator extracts 93\% of the available Fisher information from only three correlation samples, and that the two-stage combination attains the Cram\'{e}r-Rao bound within 1.04--1.11$\times$ across the operating SNR range. These results transform parabolic interpolation from an ad-hoc heuristic into a theoretically justified estimator.
+\noindent\textbf{Theoretical Performance Guarantees.} We derive the closed-form bias-variance decomposition of the parabolic interpolation estimator (Section~\ref{sec:theory}). Lemma~1 establishes that the interpolation denominator is structurally invariant to the true fractional offset, guaranteeing exact recovery in the noiseless limit. Theorem~1 provides the asymptotic variance as a function of SNR and fractional offset. Corollary~1 proves that the estimator extracts 93\% of the available Fisher information from only three correlation samples, and that the two-stage combination attains the Cram\'{e}r-Rao bound within 1.04--1.11$\times$ across the operating SNR range. These results transform parabolic interpolation from an ad-hoc heuristic into a theoretically justified estimator.
 
 \noindent\textbf{Comprehensive Experimental Validation.} We conduct Monte Carlo simulations (500 trials, 3-path channel, $-15$ to $+15$~dB SNR) comparing six algorithms under a deliberately adversarial grid resolution, with per-path analysis revealing the distinct failure modes of each baseline method (Section~\ref{sec:results}). An ablation study isolates the contribution of each algorithmic component, and a complexity analysis quantifies the accuracy--computation trade-off. We further validate on real measured multipath channels from the Watermark benchmark (Section~\ref{sec:watermark}), establishing that Fractional~SAGE introduces zero performance degradation under real channel conditions while providing monotonic improvement as the sampling grid becomes coarser.
 
@@ -310,7 +310,7 @@ The default Stage~2 evaluates $f(\tau) = |\inner{s(t-\tau)}{\hb{x}_l}|^2$ at 200
 
 \textbf{B. Golden-Section Search (13$\times$ speedup, estimated).} Golden-section search~\cite{kiefer1953} converges to the maximum of a unimodal function in approximately 15 evaluations. Since $f(\tau)$ is provably unimodal on $[\hat{\tau}^{(1)} \pm 0.5]$ at $\SNR \ge 5$~dB, this strategy is theoretically sound.
 
-\textbf{C. Newton Refinement (9 evals, $\sim$22$\times$ speedup, functional).} Inspired by NOMP~\cite{mamandipoor2016}, Newton iterations on $f(\tau)=|\langle\mathbf{s}(\tau),\hat{\mathbf{x}}_l\rangle|^2$ refine the delay via $\tau_{k+1}=\tau_k - f'(\tau_k)/f''(\tau_k)$. Two issues required resolution: (i)~a derivative sign error in the frequency-domain gradient computation caused the Newton step to move \textit{away} from the peak, producing the 4--12 sample divergence observed in early experiments; correcting $\partial\mathbf{s}/\partial\tau$ in the frequency domain eliminated this instability. (ii)~Hann windowing of the truncated residual signal before FFT eliminates boundary-discontinuity artifacts that otherwise introduce spurious high-frequency components. With both corrections, Newton refinement converges stably at all SNR levels, achieving a delay RMSE floor of $\sim$0.37~samples at $\SNR\ge 0$~dB. The floor is limited not by Newton divergence but by the integer-grid OMP initialization, which struggles with closely-spaced paths ($\Delta\tau\approx10$~samples). Replacing the integer-grid OMP with a dictionary-based initialization would further close the gap to the two-stage estimator.
+\textbf{C. Newton Refinement (9 evals, $\sim$22$\times$ speedup, functional).} Newton iterations on $f(\tau)$~\cite{mamandipoor2016} refine the delay via $\tau_{k+1}=\tau_k - f'(\tau_k)/f''(\tau_k)$. With corrected frequency-domain gradient computation and Hann windowing to suppress FFT boundary artifacts, Newton refinement converges stably, achieving RMSE $\sim$0.37~samples at $\SNR\ge 0$~dB. The residual floor stems from integer-grid OMP initialization limitations on closely-spaced paths, not from Newton divergence.
 
 \begin{table}[t]
 \centering
@@ -329,36 +329,7 @@ Newton Refinement & 9 & 22$\times$ (est.) & 0.37 (floor) & Hann win. \\
 \end{tabular}
 \end{table}
 
-Each acceleration strategy carries a risk of accuracy degradation under adverse conditions. Table~\ref{tab:failure} catalogs the known failure modes and their mitigations.
-
-Each acceleration strategy carries a risk of accuracy degradation under adverse conditions. Table~\ref{tab:failure} catalogs the known failure modes and their mitigations.
-
-\begin{table}[t]
-\centering
-\caption{Failure Modes and Mitigations}
-\label{tab:failure}
-\footnotesize
-\begin{tabular}{@{}lp{1.35cm}cp{2.0cm}@{}}
-\toprule
-Strategy & Failure Mode & Risk & Mitigation \\
-\midrule
-Coarse-to-Fine & Coarse peak misses optimum & $\SNR < 0$~dB & Reduce step to 0.02 \\
-Golden-Section & Local maximum trap & Dense paths, $<5$~dB & 3 random restarts \\
-Newton & $f''(\tau) \to 0$; noise amp. & $\SNR < 10$~dB & Regularization; step clip \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-To balance speed and robustness, we propose an SNR-dependent adaptive switching strategy:
-\begin{equation}
-\text{Stage~2} = \begin{cases}
-\text{Full grid (200)} & \SNR < 0 \text{ dB} \\
-\text{Coarse-to-fine (40)} & 0 \leq \SNR < 10 \text{ dB} \\
-\text{Newton (9)} & \SNR \geq 10 \text{ dB}
-\end{cases}
-\label{eq:adaptive}
-\end{equation}
-Across all SNR, the adaptive strategy matches the full-grid RMSE to within $\pm 2\%$ while reducing average computation by \textbf{4--10$\times$}.
+For all experiments in this paper, we use the coarse-to-fine strategy (40 evaluations, 4.5$\times$ speedup) as the default Stage~2 implementation, which achieves full-grid-equivalent accuracy at all tested SNR levels.
 
 % ===========================================================================
 % SECTION 4: THEORETICAL PERFORMANCE ANALYSIS
@@ -366,7 +337,7 @@ Across all SNR, the adaptive strategy matches the full-grid RMSE to within $\pm 
 \section{Theoretical Performance Analysis}
 \label{sec:theory}
 
-In this section, we derive the bias-variance decomposition of the parabolic interpolation estimator $\hat{\delta}$ and establish its relationship to the CRB. The three results---Lemma~1 (denominator invariance), Theorem~1 (asymptotic variance), and Theorem~2 (CRB efficiency)---provide the mathematical justification for why the computationally trivial three-point parabolic interpolation can achieve near-optimal accuracy.
+In this section, we derive the bias-variance decomposition of the parabolic interpolation estimator $\hat{\delta}$ and establish its relationship to the CRB. The three results---Lemma~1 (denominator invariance), Theorem~1 (asymptotic variance), and Corollary~1 (CRB efficiency)---provide the mathematical justification for why the computationally trivial three-point parabolic interpolation can achieve near-optimal accuracy.
 
 To establish the theoretical properties of the parabolic estimator, we first introduce the signal model and notation. Let $R(\tau) = \inner{s(t)}{s(t-\tau)}$ denote the autocorrelation function of the transmitted waveform. For a well-designed pseudo-random sequence with approximately flat spectrum, $R(\tau)$ is well-approximated by a quadratic function near the origin:
 \begin{equation}
@@ -453,30 +424,28 @@ Substituting $\SNR = |\alpha|^2/N_0$ yields~\eqref{eq:thm1}. The $-4\delta$ term
 
 \textbf{Special cases:} The variance is minimized at $\delta = 1/6 \approx 0.167$ and maximized at the grid boundary $\delta = \pm 0.5$ (2$\times$ inflation). At $\delta = 0$: $\Var = 1/(16c^2 \cdot \SNR)$; at $\delta = 0.5$: $\Var = 2/(16c^2 \cdot \SNR)$.
 
-\subsection{Theorem~2---CRB Efficiency}
+\subsection{Corollary~1---CRB Efficiency}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{results/fig_07_bias_efficiency.png}
-\caption{Performance of the parabolic interpolation estimator (Stage~1). (a)~Deterministic bias $\hat{\delta}-\delta$ computed from the actual autocorrelation $|R(\tau)|^2$ of the 511-point QPSK waveform (noiseless). The bias is zero at $\delta=0$ and $\delta=\pm0.5$ (by symmetry and clipping), reaches approximately $-0.29$~samples at $|\delta|\approx0.4$, and is always negative (the parabolic fit systematically underestimates the offset). This deterministic bias is the residual error that Stage~2 eliminates. (b)~CRB efficiency ratio $\mathrm{Var}(\hat{\delta})/\mathrm{CRB}$ vs.\ SNR at $\delta=0.25$. The ratio is independent of SNR because both the numerator (Theorem~1) and denominator (CRB) scale as $1/\mathrm{SNR}$. For a 511-point QPSK waveform with curvature parameter $c=1.63$, the asymptotic efficiency is $0.93$, meaning the parabolic estimator extracts 93\% of the available Fisher information from only three correlation samples. The remaining 7\% is recovered by Stage~2 refinement.}
+\caption{Performance of the parabolic interpolation estimator (Stage~1). (a)~Deterministic bias $\hat{\delta}-\delta$ computed from the actual autocorrelation $|R(\tau)|^2$ of the 511-point QPSK waveform (noiseless). The bias is zero at $\delta=0$ and $\delta=\pm0.5$ (by symmetry and clipping), reaches approximately $-0.29$~samples at $|\delta|\approx0.4$, and is always negative (the parabolic fit systematically underestimates the offset). This deterministic bias is the residual error that Stage~2 eliminates. (b)~CRB efficiency ratio $\mathrm{Var}(\hat{\delta})/\mathrm{CRB}$ vs.\ SNR at $\delta=0.25$. The ratio is independent of SNR because both the numerator (Theorem~1) and denominator (CRB) scale as $1/\mathrm{SNR}$. For a 511-point QPSK waveform with curvature parameter $c=1.56$, the asymptotic efficiency is $0.93$, meaning the parabolic estimator extracts 93\% of the available Fisher information from only three correlation samples. The remaining 7\% is recovered by Stage~2 refinement.}
 \label{fig:bias}
 \end{figure*}
 
-\textbf{Theorem~2 (CRB Efficiency Ratio).} The parabolic estimator achieves the CRB up to a constant factor independent of SNR:
+\textbf{Corollary~1 (CRB Efficiency Ratio).} The parabolic estimator achieves the CRB up to a constant factor independent of SNR. Dividing Theorem~1's variance by the CRB expression~\cite{kay1993} yields:
 \begin{equation}
 \frac{\Var(\hat{\delta})}{\CRB} = \frac{\norm{s'}^2}{8c^2} \cdot (12\delta^2 + 1 - 4\delta) + \bigO(\SNR^{-1})
-\label{eq:thm2}
+\label{eq:cor1}
 \end{equation}
-where $\norm{s'}^2 = \sum_t |s'(t)|^2$ is the energy of the signal derivative, and $\CRB = 1/(2 \cdot \SNR \cdot \norm{s'}^2)$~\cite{kay1993}.
-
-\textit{Proof.} Divide~\eqref{eq:thm1} by the CRB expression. The SNR dependence cancels, leaving a ratio involving only signal-dependent quantities. $\hfill\square$
+where $\norm{s'}^2 = \sum_t |s'(t)|^2$ is the energy of the signal derivative, and $\CRB = 1/(2 \cdot \SNR \cdot \norm{s'}^2)$.
 
 For our 511-point QPSK sequence, $\norm{s'}^2/(8c^2) \approx 0.93$ at $\delta = 0$, giving:
 \begin{equation}
 \frac{\Var(\hat{\delta})}{\CRB} \approx \mathbf{0.93}
 \end{equation}
 
-\textbf{Interpretation.} The parabolic estimator extracts \textbf{93\% of the available information} about the fractional delay from only three correlation samples. The remaining 7\% efficiency loss is the price paid for using three samples rather than the full correlation function---a trade-off that enables $\bigO(1)$ complexity.
+\textbf{Interpretation.} The parabolic estimator extracts \textbf{93\% of the available information} about the fractional delay from only three correlation samples. The remaining 7\% efficiency loss is the price paid for using three samples rather than the full correlation function---a trade-off that enables $\bigO(1)$ complexity. This result follows directly from Theorem~1 and does not require independent proof.
 
 \subsection{Effect of the Second Stage}
 
@@ -583,7 +552,7 @@ $+15$& 0.0047 & 0.0042 & \textbf{1.11} & Within 11\% of CRB \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:crb} quantifies CRB attainment across 500 MC trials. The ratio of 1.04--1.11 establishes that the two-stage estimator is \textbf{asymptotically efficient} across the practical SNR range, consistent with Theorem~2's prediction of 0.93--1.17. The ratio is always $\ge 1.0$ at $\SNR \ge 0$~dB, satisfying the physical requirement that no unbiased estimator can surpass the CRB. At $\SNR = -5$~dB, the 1.09$\times$ ratio reflects residual path-interference effects before the SAGE iterations fully converge.
+Table~\ref{tab:crb} quantifies CRB attainment across 500 MC trials. The ratio of 1.04--1.11 establishes that the two-stage estimator is \textbf{asymptotically efficient} across the practical SNR range, consistent with Corollary~1's prediction of 0.93--1.17. The ratio is always $\ge 1.0$ at $\SNR \ge 0$~dB, satisfying the physical requirement that no unbiased estimator can surpass the CRB. At $\SNR = -5$~dB, the 1.09$\times$ ratio reflects residual path-interference effects before the SAGE iterations fully converge.
 
 \subsection{Per-Path Performance Analysis}
 
@@ -880,16 +849,14 @@ $M$ & SNR (dB) & Int SAGE & \textbf{Frac SAGE} & MF & OMP & NOMP & SBL \\
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper presented a two-stage fractional delay refinement strategy for SAGE-based multipath channel estimation. Four findings constitute the contribution:
+This paper presented a two-stage fractional delay refinement strategy for SAGE-based multipath channel estimation. Three contributions constitute the core findings:
 
 \begin{enumerate}
-\item \textbf{Algorithmic:} The two-stage estimator achieves delay RMSE of \textbf{0.024 samples} at 0~dB SNR---a \textbf{99.2\% reduction} over integer-grid SAGE and a \textbf{12$\times$ improvement} over a 230-atom dictionary MF. Coarse-to-fine acceleration provides a verified 4.5$\times$ speedup with no accuracy loss.
+\item \textbf{Algorithmic:} The two-stage estimator achieves delay RMSE of \textbf{0.024 samples} at 0~dB SNR---a \textbf{99.2\% reduction} over integer-grid SAGE and a \textbf{85.7\% reduction} over the best dictionary method (OMP at 0.178). Coarse-to-fine acceleration provides a verified 4.5$\times$ speedup with no accuracy loss.
 
-\item \textbf{Theoretical:} Lemma~1 establishes the $\delta$-invariance of the parabolic denominator, guaranteeing exact noiseless recovery. Theorem~1 provides the closed-form asymptotic variance $\Var(\hat{\delta}) = (12\delta^2+1-4\delta)/(16c^2 \cdot \SNR)$. Theorem~2 proves CRB efficiency of \textbf{0.93} (Stage~1), improving to 1.00--1.17 (Stage~1+2).
+\item \textbf{Theoretical:} Lemma~1 establishes the $\delta$-invariance of the parabolic denominator, guaranteeing exact noiseless recovery under the quadratic autocorrelation model. Theorem~1 provides the closed-form asymptotic variance $\Var(\hat{\delta}) = (12\delta^2+1-4\delta)/(16c^2 \cdot \SNR)$. Corollary~1 proves CRB efficiency of \textbf{0.93} (Stage~1), improving to 1.00--1.17 (Stage~1+2).
 
-\item \textbf{Experimental:} Monte Carlo simulations (200 trials, 7 algorithms) and ablation studies confirm that Stage~2 is the dominant accuracy contributor (14$\times$ additional improvement), and that the full method achieves the CRB within 1.00--1.17$\times$ across $\SNR = -5$ to $+15$~dB.
-
-\item \textbf{Practical:} Validation on the Watermark benchmark (NOF1 Norway fjord channel) demonstrates that Fractional SAGE achieves a 149$\times$ improvement over integer SAGE and a 7.3$\times$ advantage over dictionary methods on real, measured multipath channels with known ground truth.
+\item \textbf{Experimental:} Monte Carlo simulations (500 trials for main results, 200 for grid sensitivity) and ablation studies confirm that Stage~2 is the dominant accuracy contributor (14$\times$ additional improvement), and that the full method achieves the CRB within 1.04--1.11$\times$ across $\SNR = -5$ to $+15$~dB. Validation on the Watermark benchmark (NOF1 Norway fjord channel, $8\times100 = 800$~MC trials per SNR) demonstrates a 149$\times$ improvement over integer SAGE and a 7.3$\times$ advantage over dictionary methods on real, measured multipath channels.
 \end{enumerate}
 
 The practical implication is clear: \textbf{Fractional SAGE eliminates the grid-quantization floor on real measured multipath channels while maintaining the computational efficiency of the SAGE framework}, making it a drop-in upgrade for any SAGE-based channel sounding system.
@@ -978,11 +945,11 @@ G.~Tang, B.~N.~Bhaskar, P.~Shah, and B.~Recht, ``Compressed sensing off the grid
 \bibitem{schmidt1986}
 R.~Schmidt, ``Multiple emitter location and signal parameter estimation,'' \textit{IEEE Trans. Antennas Propag.}, vol.~34, no.~3, pp.~276--280, 1986.
 
-\bibitem{ref_interp1}
-{[}Additional reference needed---sub-sample interpolation for delay estimation{]}.
+\bibitem{moddemeijer1991}
+R.~Moddemeijer, ``On the determination of the position of extrema of sampled correlators,'' \textit{IEEE Trans. Signal Process.}, vol.~39, no.~1, pp.~216--219, 1991.
 
-\bibitem{ref_interp2}
-{[}Additional reference needed---correlation peak interpolation methods{]}.
+\bibitem{svilainis2013}
+L.~Svilainis, V.~Dumbrava, A.~Chaziachmetovas, and A.~Aleksandrovas, ``Subsample interpolation bias error in time of flight estimation by direct correlation in digital domain,'' \textit{Measurement}, vol.~46, no.~10, pp.~3950--3958, 2013.
 
 \bibitem{mamandipoor2016}
 B.~Mamandipoor, D.~Ramasamy, and U.~Madhow, ``Newtonized orthogonal matching pursuit: Frequency estimation over the continuum,'' \textit{IEEE Trans. Signal Process.}, vol.~64, no.~19, pp.~5066--5081, 2016.
@@ -996,23 +963,20 @@ S.~M.~Kay, \textit{Fundamentals of Statistical Signal Processing: Estimation The
 \bibitem{pati1993}
 Y.~C.~Pati, R.~Rezaiifar, and P.~S.~Krishnaprasad, ``Orthogonal matching pursuit: Recursive function approximation with applications to wavelet decomposition,'' in \textit{Proc. Asilomar Conf. Signals, Systems and Computers}, 1993, pp.~40--44.
 
-\bibitem{ref15}
-{[}Additional reference needed---recent UWA channel estimation{]}.
+\bibitem{chi2020}
+Y.~Chi and M.~{Ferreira Da Costa}, ``Harnessing sparsity over the continuum: Atomic norm minimization for superresolution,'' \textit{IEEE Signal Process. Mag.}, vol.~37, no.~2, pp.~39--57, 2020.
 
-\bibitem{ref16}
-{[}Additional reference needed---gridless delay estimation methods{]}.
+\bibitem{maskell1999}
+D.~L.~Maskell and G.~S.~Woods, ``The estimation of subsample time delay of arrival in the discrete-time measurement of phase delay,'' \textit{IEEE Trans. Instrum. Meas.}, vol.~48, no.~6, pp.~1227--1231, 1999.
 
-\bibitem{ref17}
-{[}Additional reference needed---interpolation-based refinement{]}.
+\bibitem{zhou2023}
+Z.~Zhou, F.~Qu, X.~Nie, J.~Li, and W.~Xu, ``Research on distributed compressed sensing with dynamic block sparsity for underwater acoustic channel estimation,'' \textit{IEEE Internet Things J.}, vol.~10, no.~2, pp.~1638--1651, 2023.
 
-\bibitem{ref18}
-{[}Additional reference needed---recent UWA channel estimation{]}.
+\bibitem{safari2021}
+M.~Safari, S.~Daei, and F.~Haddadi, ``Off-the-grid recovery of time and frequency shifts with multiple measurement vectors,'' \textit{Signal Process.}, vol.~183, Art.~no.~107986, 2021.
 
-\bibitem{ref19}
-{[}Additional reference needed---recent gridless/ANM methods{]}.
-
-\bibitem{ref20}
-{[}Additional reference needed---recent UWA channel estimation{]}.
+\bibitem{feng2023}
+X.~Feng, J.~Wang, H.~Sun, and Y.~{Rong Zheng}, ``Channel estimation for underwater acoustic OFDM communications via temporal sparse Bayesian learning,'' \textit{Signal Process.}, vol.~211, Art.~no.~109108, 2023.
 
 \bibitem{watermark2017}
 P.~A.~van~Walree, F.-X.~Socheleau, R.~Otnes, and T.~Jenserud, ``The Watermark benchmark for underwater acoustic modulation schemes,'' \textit{IEEE J. Ocean. Eng.}, vol.~42, no.~4, pp.~1007--1018, 2017.
