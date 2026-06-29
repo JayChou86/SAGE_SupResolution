@@ -110,7 +110,7 @@ def fig_01():
     crb       = 0.3*np.exp(-snr/7) + 0.005
 
     ax2.semilogy(snr, rmse_int,  'ks--', lw=2, ms=7, label='Integer SAGE')
-    ax2.semilogy(snr, rmse_frac, 'b^-', lw=2, ms=7, label='Fractional SAGE')
+    ax2.semilogy(snr, rmse_frac, 'b^-', lw=2, ms=7, label='CD-SAGE')
     ax2.semilogy(snr, crb,       'r-',  lw=2, ms=7, label='CRB')
     ax2.fill_between([15, 30], 2.5, 4, alpha=0.08, color='gray')
     ax2.annotate('Grid mismatch\nfloor', xy=(22, 3.2), ha='center', fontsize=9,
@@ -201,7 +201,7 @@ def fig_02():
     arr(3.05, 1.5, 3.05, 0.8, style='arc', c='#FF6F00')
     ax.text(5.5, 10.5, 'next iter', fontsize=7, color='#FF6F00', style='italic')
 
-    ax.set_title('Two-Stage Fractional SAGE Algorithm', fontsize=14, pad=15)
+    ax.set_title('Two-Stage CD-SAGE Algorithm', fontsize=14, pad=15)
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_02_flowchart.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
@@ -491,7 +491,7 @@ def fig_09():
     ax_main.stem(mdi-0.15, np.abs(mai), linefmt='k-', markerfmt='ks', basefmt=' ',
                  label='Integer SAGE')
     ax_main.stem(mdf+0.15, np.abs(maf), linefmt='b-', markerfmt='b^', basefmt=' ',
-                 label='Fractional SAGE')
+                 label='CD-SAGE')
     for t, a_ in zip(td, np.abs(ta)):
         ax_main.add_patch(Rectangle((t-1.5, 0), 3, a_*1.3, fill=False,
                                      ls='--', lw=1, edgecolor='gray', alpha=0.6))
@@ -547,7 +547,7 @@ def fig_10():
 
     fig, ax = plt.subplots(figsize=(12, 4))
     ax.plot(np.abs(r_int), 'k-', lw=1, label=f'Integer SAGE ($E={e_int:.1f}$)')
-    ax.plot(np.abs(r_frac), 'b-', lw=1.5, label=f'Fractional SAGE ($E={e_frac:.1f}$)')
+    ax.plot(np.abs(r_frac), 'b-', lw=1.5, label=f'CD-SAGE ($E={e_frac:.1f}$)')
     ax.set_xlabel('Time (Sample)'); ax.set_ylabel('$|$Residual$|$')
     ax.set_title('Residual Error Comparison')
     ax.legend(fontsize=10); ax.grid(alpha=0.3); ax.set_xlim([30, 250])
@@ -618,7 +618,7 @@ def fig_12():
 
     fig, ax1 = plt.subplots(figsize=(8, 5.5))
     ax1.semilogy(m_vals, mse_i, 'b-s', lw=2, ms=8, label='Integer SAGE')
-    ax1.semilogy(m_vals, mse_f, 'r-o', lw=2, ms=8, label='Fractional SAGE')
+    ax1.semilogy(m_vals, mse_f, 'r-o', lw=2, ms=8, label='CD-SAGE')
     ax1.set_xlabel('Decimation Factor $M$')
     ax1.set_ylabel('Equalization MSE')
     ax1.legend(loc='upper right'); ax1.grid(alpha=0.3); ax1.set_xticks(m_vals)

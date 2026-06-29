@@ -14,7 +14,7 @@ rng=np.random.RandomState(SEED); np.random.seed(SEED)
 N_seq,N_rx,L=511,1000,3
 td=np.array([50.43,60.66,200.25])
 ta=np.array([1.0*np.exp(1j*0.2),0.5*np.exp(-1j*1.5),0.8*np.exp(1j*0.8)])
-an=['IntSAGE','FracSAGE','MF','OMP','NOMP','SBL']
+an=['IntSAGE','CD-SAGE','MF','OMP','NOMP','SBL']
 colors=['#333333','#1f77b4','#2ca02c','#d62728','#ff7f0e','#17becf']
 markers=['s','^','*','d','v','x']; ls=['-','-','--','--','-.','-']
 path_labels=[f'Path 1 (τ={td[0]:.1f})',f'Path 2 (τ={td[1]:.1f})',f'Path 3 (τ={td[2]:.1f})']

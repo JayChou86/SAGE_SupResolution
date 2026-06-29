@@ -15,7 +15,7 @@ d=sio.loadmat(MAT); h_all=d['h']; fs_tau=float(d['fs_tau'][0,0])
 SEED=42; rng=np.random.RandomState(SEED); np.random.seed(SEED)
 N_seq=511; s_tx=generate_tx_signal(N_seq,seed=SEED); L=3
 MC=100; SNRs=[-15,-10,-5,0,5,10,15]
-an=['Int SAGE','Frac SAGE','MF','OMP','NOMP','SBL']; nA=len(an)
+an=['Int SAGE','CD-SAGE','MF','OMP','NOMP','SBL']; nA=len(an)
 colors=['#333333','#1f77b4','#2ca02c','#d62728','#ff7f0e','#17becf']
 markers=['s','^','*','d','v','x']; ls=['-','-','--','--','-.','-']
 
