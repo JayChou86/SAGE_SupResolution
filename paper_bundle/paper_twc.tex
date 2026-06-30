@@ -50,7 +50,7 @@
 % ===========================================================================
 % TITLE
 % ===========================================================================
-\title{Two-Stage Fractional Delay Estimation for\\SAGE-based Multipath Channel Sounding}
+\title{Two-Stage Continuous-Delay Estimation for\\SAGE-based Multipath Channel Sounding}
 
 \author{Anonymous Author,~\IEEEmembership{Member,~IEEE}
 \thanks{Manuscript received June 2026. This work was supported in part by [funding information to be added].}
@@ -68,11 +68,11 @@ We propose a two-stage fractional delay refinement strategy that augments the SA
 
 We provide a rigorous theoretical foundation for the parabolic estimator: Lemma~1 establishes a structural invariance that guarantees exact noiseless recovery, Theorem~1 derives the closed-form asymptotic variance, and Corollary~1 proves that the estimator extracts 93\% of the available Fisher information from only three correlation samples.
 
-Extensive Monte Carlo simulations (500 trials per SNR, 3-path channel, $-15$ to $+15$~dB) demonstrate that Fractional SAGE reduces delay estimation error by two orders of magnitude compared to integer-grid SAGE, achieves the Cram\'{e}r-Rao bound within a factor of 1.04--1.11 across the operating SNR range, and outperforms dictionary-based methods regardless of grid resolution. Per-path analysis reveals that the method's advantages are twofold: continuous-valued estimation eliminates the grid-quantization floor that limits discrete-grid methods on isolated paths, while iterative interference cancellation via the E-step resolves closely-spaced paths that dictionary methods cannot separate. An ablation study confirms that the local grid refinement stage (Stage~2) is the dominant accuracy contributor. Validation on the Watermark benchmark (NOF1 Norway fjord, 800 MC trials per SNR) demonstrates that Fractional SAGE achieves a 7.3$\times$ improvement over dictionary methods on real measured multipath channels, with near-CRB performance across all decimation factors. Coarse-to-fine acceleration yields a verified 4.5$\times$ speedup with negligible accuracy loss.
+Extensive Monte Carlo simulations (500 trials per SNR, 3-path channel, $-15$ to $+15$~dB) demonstrate that Continuous-Delay SAGE (CD-SAGE) reduces delay estimation error by two orders of magnitude compared to integer-grid SAGE, achieves the Cram\'{e}r-Rao bound within a factor of 1.04--1.11 across the operating SNR range, and outperforms dictionary-based methods regardless of grid resolution. Per-path analysis reveals that the method's advantages are twofold: continuous-valued estimation eliminates the grid-quantization floor that limits discrete-grid methods on isolated paths, while iterative interference cancellation via the E-step resolves closely-spaced paths that dictionary methods cannot separate. An ablation study confirms that the local grid refinement stage (Stage~2) is the dominant accuracy contributor. Validation on the Watermark benchmark (NOF1 Norway fjord, 800 MC trials per SNR) demonstrates that CD-SAGE achieves a 7.3$\times$ improvement over dictionary methods on real measured multipath channels, with near-CRB performance across all decimation factors. Coarse-to-fine acceleration yields a verified 4.5$\times$ speedup with negligible accuracy loss.
 \end{abstract}
 
 \begin{IEEEkeywords}
-SAGE algorithm, multipath channel estimation, fractional delay, parabolic interpolation, Cram\'{e}r-Rao bound, super-resolution, underwater acoustic communications.
+SAGE algorithm, multipath channel estimation, CD-SAGE, fractional delay, parabolic interpolation, Cram\'{e}r-Rao bound, super-resolution, underwater acoustic communications.
 \end{IEEEkeywords}
 
 % ===========================================================================
@@ -122,7 +122,7 @@ This paper establishes a rigorous foundation for fractional delay estimation wit
 
 \noindent\textbf{Theoretical Performance Guarantees.} We derive the closed-form bias-variance decomposition of the parabolic interpolation estimator (Section~\ref{sec:theory}). Lemma~1 establishes that the interpolation denominator is structurally invariant to the true fractional offset, guaranteeing exact recovery in the noiseless limit. Theorem~1 provides the asymptotic variance as a function of SNR and fractional offset. Corollary~1 proves that the estimator extracts 93\% of the available Fisher information from only three correlation samples, and that the two-stage combination attains the Cram\'{e}r-Rao bound within 1.04--1.11$\times$ across the operating SNR range. These results transform parabolic interpolation from an ad-hoc heuristic into a theoretically justified estimator.
 
-\noindent\textbf{Comprehensive Experimental Validation.} We conduct Monte Carlo simulations (500 trials, 3-path channel, $-15$ to $+15$~dB SNR) comparing six algorithms under a deliberately adversarial grid resolution, with per-path analysis revealing the distinct failure modes of each baseline method (Section~\ref{sec:results}). An ablation study isolates the contribution of each algorithmic component, and a complexity analysis quantifies the accuracy--computation trade-off. We further validate on real measured multipath channels from the Watermark benchmark (Section~\ref{sec:watermark}), establishing that Fractional~SAGE introduces zero performance degradation under real channel conditions while providing monotonic improvement as the sampling grid becomes coarser.
+\noindent\textbf{Comprehensive Experimental Validation.} We conduct Monte Carlo simulations (500 trials, 3-path channel, $-15$ to $+15$~dB SNR) comparing six algorithms under a deliberately adversarial grid resolution, with per-path analysis revealing the distinct failure modes of each baseline method (Section~\ref{sec:results}). An ablation study isolates the contribution of each algorithmic component, and a complexity analysis quantifies the accuracy--computation trade-off. We further validate on real measured multipath channels from the Watermark benchmark (Section~\ref{sec:watermark}), establishing that CD-SAGE introduces zero performance degradation under real channel conditions while providing monotonic improvement as the sampling grid becomes coarser.
 
 % ===========================================================================
 % SECTION 2: SYSTEM MODEL AND SAGE PRELIMINARIES
@@ -191,15 +191,15 @@ where $f$ is the normalized frequency vector. Equation~\eqref{eq:fracshift} enab
 % ===========================================================================
 % SECTION 3: PROPOSED METHOD
 % ===========================================================================
-\section{Proposed Method: Two-Stage Fractional SAGE}
+\section{Proposed Method: Two-Stage CD-SAGE}
 \label{sec:method}
 
-The proposed Fractional SAGE replaces the integer-constrained M-step of conventional SAGE with a two-stage continuous delay estimator. Fig.~\ref{fig:flowchart} illustrates the complete algorithm pipeline. The two stages operate as follows:
+The proposed CD-SAGE replaces the integer-constrained M-step of conventional SAGE with a two-stage continuous delay estimator. Fig.~\ref{fig:flowchart} illustrates the complete algorithm pipeline. The two stages operate as follows:
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{flowchart_tikz.pdf}
-\caption{Two-Stage Fractional SAGE algorithm pipeline. Left: main SAGE loop (E-step, amplitude estimation, residual update). Right: core contribution---FFT correlation followed by Stage~1 parabolic interpolation and Stage~2 local grid refinement.}
+\caption{Two-Stage CD-SAGE algorithm pipeline. Left: main SAGE loop (E-step, amplitude estimation, residual update). Right: core contribution---FFT correlation followed by Stage~1 parabolic interpolation and Stage~2 local grid refinement.}
 \label{fig:flowchart}
 \end{figure*}
 
@@ -269,7 +269,7 @@ with default step $\Delta = 0.005$ samples, yielding $|\mathcal{T}| \approx 200$
 
 \subsection{Complete Algorithm}
 
-Algorithm~\ref{alg:sage} presents the complete two-stage Fractional SAGE. Key implementation details:
+Algorithm~\ref{alg:sage} presents the complete two-stage CD-SAGE. Key implementation details:
 
 \textbf{First-iteration strategy.} In the first SAGE iteration ($i = 1$), we perform a full-range search over all $N_r - N_s + 1$ integer delays. In subsequent iterations ($i \ge 2$), the integer search is restricted to a $\pm 10$ sample window around the previous estimate---a standard heuristic~\cite{fleury1999} that leverages the fact that EM updates refine rather than relocate path estimates.
 
@@ -278,7 +278,7 @@ Algorithm~\ref{alg:sage} presents the complete two-stage Fractional SAGE. Key im
 \textbf{Power-domain interpolation.} Stage~1 operates on $|C(k)|^2$ rather than $|C(k)|$, because squaring sharpens the correlation peak, improving the SNR of the three sample values used in~\eqref{eq:delta1}.
 
 \begin{algorithm}[t]
-\caption{Two-Stage Fractional SAGE}
+\caption{Two-Stage CD-SAGE}
 \label{alg:sage}
 \begin{algorithmic}[1]
 \Require $\mathbf{y} \in \Cc^{N_r}$ (received signal), $\mathbf{s} \in \Cc^{N_s}$ (waveform, $\norm{\mathbf{s}}=1$)
@@ -496,7 +496,7 @@ We compare against five baseline methods: Integer SAGE~\cite{fleury1999}, Matche
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig_rmse_overall.png}
-\caption{Delay, magnitude, and phase RMSE vs.\ SNR for all algorithms (500 MC trials, grid=0.5). Fractional SAGE achieves near-CRB performance across the full SNR range, outperforming all dictionary-based methods without requiring a precomputed dictionary. Dictionary methods (MF, OMP, SBL) exhibit a quantization floor determined by the 0.5-sample grid resolution.}
+\caption{Delay, magnitude, and phase RMSE vs.\ SNR for all algorithms (500 MC trials, grid=0.5). CD-SAGE achieves near-CRB performance across the full SNR range, outperforming all dictionary-based methods without requiring a precomputed dictionary. Dictionary methods (MF, OMP, SBL) exhibit a quantization floor determined by the 0.5-sample grid resolution.}
 \label{fig:rmse}
 \end{figure*}
 
@@ -511,7 +511,7 @@ Fig.~\ref{fig:rmse} presents the three-panel RMSE comparison. Table~\ref{tab:ran
 \toprule
 Rank & Algorithm & RMSE & vs Int SAGE & vs CRB \\
 \midrule
-1 & \textbf{Fractional SAGE} & \textbf{0.0251} & \textbf{99.1\%} $\downarrow$ & 1.05$\times$ \\
+1 & \textbf{CD-SAGE} & \textbf{0.0251} & \textbf{99.1\%} $\downarrow$ & 1.05$\times$ \\
 2 & SBL (adaptive) & 0.177 & 93.9\% $\downarrow$ & 7.45$\times$ \\
 3 & OMP & 0.178 & 93.8\% $\downarrow$ & 7.48$\times$ \\
 4 & MF (381 atoms) & 0.187 & 93.5\% $\downarrow$ & 7.85$\times$ \\
@@ -525,8 +525,8 @@ Six key observations emerge:
 
 \begin{enumerate}
 \item \textbf{Integer SAGE plateaus} at RMSE $\approx$ 3 samples for $\SNR \ge -5$~dB---the grid mismatch floor.
-\item \textbf{Fractional SAGE achieves RMSE = 0.0251 at 0~dB}, a \textbf{115$\times$ improvement} over integer SAGE, and tracks the CRB within 1.04--1.11$\times$ across $\SNR = -5$ to $+15$~dB.
-\item \textbf{Dictionary methods (MF, OMP, SBL) hit a quantization floor} at RMSE $\approx$ 0.18--0.19, determined by the 0.5-sample grid resolution. With a deliberately chosen worst-case true delay for Path~3 ($\tau_3 = 200.25$, exactly midway between grid points 200.0 and 200.5), the grid bias is 0.25~samples. Frac~SAGE remains unaffected because it estimates continuous-valued delays.
+\item \textbf{CD-SAGE achieves RMSE = 0.0251 at 0~dB}, a \textbf{115$\times$ improvement} over integer SAGE, and tracks the CRB within 1.04--1.11$\times$ across $\SNR = -5$ to $+15$~dB.
+\item \textbf{Dictionary methods (MF, OMP, SBL) hit a quantization floor} at RMSE $\approx$ 0.18--0.19, determined by the 0.5-sample grid resolution. With a deliberately chosen worst-case true delay for Path~3 ($\tau_3 = 200.25$, exactly midway between grid points 200.0 and 200.5), the grid bias is 0.25~samples. CD-SAGE remains unaffected because it estimates continuous-valued delays.
 \item \textbf{NOMP (0.414) is stable after Newton fixes}---correcting a derivative sign error and applying Hann windowing eliminates the 4--12 sample divergence previously observed (Section~\ref{sec:accelerate}). However, the integer-grid OMP initialization limits performance on closely-spaced paths.
 \item \textbf{The 0.5-sample grid is deliberately adversarial} for dictionary methods: the 0.25-sample worst-case bias isolates the grid-mismatch effect from other confounding factors. This explains why dictionary RMSE (0.18) appears closer to the grid floor than in the original 0.83-sample-grid experiments.
 \item \textbf{Per-path analysis (Table~\ref{tab:perpath}) reveals strong path-dependent behavior}: dictionary methods perform well on isolated paths limited only by grid bias, but degrade sharply on closely-spaced paths where interference dominates.
@@ -536,7 +536,7 @@ Six key observations emerge:
 
 \begin{table}[t]
 \centering
-\caption{Fractional SAGE Delay RMSE vs.\ CRB (500 MC, grid=0.5)}
+\caption{CD-SAGE Delay RMSE vs.\ CRB (500 MC, grid=0.5)}
 \label{tab:crb}
 \small
 \begin{tabular}{@{}ccccc@{}}
@@ -556,7 +556,7 @@ Table~\ref{tab:crb} quantifies CRB attainment across 500 MC trials. The ratio of
 
 \subsection{Per-Path Performance Analysis}
 
-A key strength of Fractional SAGE is its robustness to path-specific challenges. Table~\ref{tab:perpath} presents the per-path delay RMSE at 0~dB SNR, revealing the distinct difficulty profile of each path.
+A key strength of CD-SAGE is its robustness to path-specific challenges. Table~\ref{tab:perpath} presents the per-path delay RMSE at 0~dB SNR, revealing the distinct difficulty profile of each path.
 
 \begin{table*}[t]
 \centering
@@ -568,7 +568,7 @@ A key strength of Fractional SAGE is its robustness to path-specific challenges.
 Algorithm & Path 1 ($\tau{=}50.43$) & Path 2 ($\tau{=}60.66$) & Path 3 ($\tau{=}200.25$) & CRB \\
 \midrule
 Integer SAGE & 0.430 & 4.980 & 0.250 & --- \\
-\textbf{Fractional SAGE} & \textbf{0.0167} & \textbf{0.0338} & \textbf{0.0216} & --- \\
+\textbf{CD-SAGE} & \textbf{0.0167} & \textbf{0.0338} & \textbf{0.0216} & --- \\
 Matched Filter & 0.070 & 0.192 & 0.250 & --- \\
 OMP & 0.070 & 0.166 & 0.250 & --- \\
 NOMP (Hann-win.) & 0.701 & 0.146 & 0.034 & --- \\
@@ -581,9 +581,9 @@ CRB (per path) & 0.0168 & 0.0336 & 0.0210 & --- \\
 
 \subsubsection{Path~1 --- The Strongest Path ($\tau_1 = 50.43$, $|\alpha_1| = 1.0$)}
 
-Path~1 benefits from the highest SNR among the three paths ($|\alpha_1|^2 / N_0$ is 6~dB above Path~2 and 2~dB above Path~3). However, it is only 10.2 samples from Path~2, creating mutual interference that challenges all algorithms except Frac~SAGE.
+Path~1 benefits from the highest SNR among the three paths ($|\alpha_1|^2 / N_0$ is 6~dB above Path~2 and 2~dB above Path~3). However, it is only 10.2 samples from Path~2, creating mutual interference that challenges all algorithms except CD-SAGE.
 
-\textbf{Fractional SAGE} achieves RMSE = 0.0167, essentially at the CRB of 0.0168 (efficiency = 0.99$\times$). The two-stage refinement operates near-optimally: Stage~1's parabolic interpolation produces $\hat{\delta}^{(1)} \approx 0.43$ from the three correlation samples, and Stage~2 corrects the $\sim 10^{-3}$ quartic-model residual. The strong signal power ($|\alpha_1|=1.0$) ensures that the three correlation samples $y_{-1}, y_0, y_{+1}$ have high per-sample SNR, making the parabolic fit extremely accurate even before Stage~2 refinement.
+\textbf{CD-SAGE} achieves RMSE = 0.0167, essentially at the CRB of 0.0168 (efficiency = 0.99$\times$). The two-stage refinement operates near-optimally: Stage~1's parabolic interpolation produces $\hat{\delta}^{(1)} \approx 0.43$ from the three correlation samples, and Stage~2 corrects the $\sim 10^{-3}$ quartic-model residual. The strong signal power ($|\alpha_1|=1.0$) ensures that the three correlation samples $y_{-1}, y_0, y_{+1}$ have high per-sample SNR, making the parabolic fit extremely accurate even before Stage~2 refinement.
 
 \textbf{Integer SAGE} estimates $\tau_1 = 50$ (RMSE = 0.43). This is exactly the grid-mismatch error $\delta_1 = 0.43$, confirming that integer SAGE degrades gracefully to the nearest-integer error floor for isolated strong paths.
 
@@ -595,27 +595,27 @@ Path~1 benefits from the highest SNR among the three paths ($|\alpha_1|^2 / N_0$
 
 Path~2 is the most challenging: it has the lowest amplitude (half of Path~1), is located only 10.2 samples from the stronger Path~1, and sits at a fractional offset $\delta_2 = 0.16$ from the nearest integer. This combination of low SNR, strong adjacent-path interference, and moderate grid offset creates a stress test that exposes the fundamental differences between the algorithms.
 
-\textbf{Fractional SAGE} achieves RMSE = 0.0338, matching the CRB of 0.0336 (efficiency = 1.01$\times$). This is the most significant result in the per-path analysis: despite being the weakest path with the strongest interferer, Frac~SAGE achieves CRB-level accuracy. The mechanism is the iterative E-step: in SAGE iteration $i \ge 2$, the E-step reconstructs $\hat{\mathbf{x}}_2 = \mathbf{r} + \hat{\alpha}_2\mathbf{s}(\hat{\tau}_2)$, where the residual $\mathbf{r}$ has Path~1's contribution already subtracted. This \textit{interference cancellation} enables Path~2 to be estimated as if Path~1 were absent. The 15-iteration SAGE loop refines both paths jointly, converging to near-CRB accuracy for both.
+\textbf{CD-SAGE} achieves RMSE = 0.0338, matching the CRB of 0.0336 (efficiency = 1.01$\times$). This is the most significant result in the per-path analysis: despite being the weakest path with the strongest interferer, CD-SAGE achieves CRB-level accuracy. The mechanism is the iterative E-step: in SAGE iteration $i \ge 2$, the E-step reconstructs $\hat{\mathbf{x}}_2 = \mathbf{r} + \hat{\alpha}_2\mathbf{s}(\hat{\tau}_2)$, where the residual $\mathbf{r}$ has Path~1's contribution already subtracted. This \textit{interference cancellation} enables Path~2 to be estimated as if Path~1 were absent. The 15-iteration SAGE loop refines both paths jointly, converging to near-CRB accuracy for both.
 
-\textbf{Integer SAGE} fails catastrophically: RMSE = 4.98 samples. The integer-grid correlation peak for Path~2 falls at $\tau \approx 50$---the same integer location as Path~1. The 10.2-sample spacing is insufficient for the integer grid to resolve two distinct peaks; instead, a single broad correlation lobe spans both paths, and the argmax operation picks the stronger lobe (Path~1). This is the \textit{path-masking} phenomenon: a weaker path is invisible to integer-grid methods when it lies within the main lobe of a stronger neighbor. Notably, Path~2's RMSE under Integer SAGE \textit{increases} from 4.89 at $-5$~dB to 5.94 at $+15$~dB---a counter-intuitive trend explained by \textit{noise-aided estimation}: at low SNR, thermal noise occasionally enables the argmax to escape Path~1's dominant correlation lobe and detect Path~2's own peak near $\tau\approx61$, whereas at high SNR the deterministic masking by Path~1 produces a consistent error of $\sim$10.66~samples and a consequently higher RMSE. This stochastic resonance effect is a direct consequence of the path-masking geometry and is absent in Frac~SAGE due to the E-step interference cancellation.
+\textbf{Integer SAGE} fails catastrophically: RMSE = 4.98 samples. The integer-grid correlation peak for Path~2 falls at $\tau \approx 50$---the same integer location as Path~1. The 10.2-sample spacing is insufficient for the integer grid to resolve two distinct peaks; instead, a single broad correlation lobe spans both paths, and the argmax operation picks the stronger lobe (Path~1). This is the \textit{path-masking} phenomenon: a weaker path is invisible to integer-grid methods when it lies within the main lobe of a stronger neighbor. Notably, Path~2's RMSE under Integer SAGE \textit{increases} from 4.89 at $-5$~dB to 5.94 at $+15$~dB---a counter-intuitive trend explained by \textit{noise-aided estimation}: at low SNR, thermal noise occasionally enables the argmax to escape Path~1's dominant correlation lobe and detect Path~2's own peak near $\tau\approx61$, whereas at high SNR the deterministic masking by Path~1 produces a consistent error of $\sim$10.66~samples and a consequently higher RMSE. This stochastic resonance effect is a direct consequence of the path-masking geometry and is absent in CD-SAGE due to the E-step interference cancellation.
 
 \textbf{Dictionary methods} show partial improvement over integer SAGE but remain far from the CRB: MF achieves 0.192, OMP 0.166, and SBL 0.163. The 0.5-sample dictionary provides enough resolution to separate the two correlation peaks (10.2 samples $\gg$ 0.5-sample grid), but \textit{residual interference} from Path~1 limits accuracy. After subtracting Path~1's estimated contribution (at grid point 50.5), the residual still contains $\sim 5\%$ of Path~1's energy due to the 0.07-sample grid misalignment. This residual leaks into Path~2's correlation, biasing the peak location by 0.1--0.2 samples.
 
-\textbf{NOMP} achieves RMSE = 0.146---its best per-path result and notably better than MF/OMP/SBL on this path. The Hann-windowed Newton refinement, operating on a clean window around $\tau \approx 60.7$, successfully pulls the estimate toward the true continuous delay. However, the absence of iterative interference cancellation (the outer SAGE loop) limits further improvement. This result validates the Newton fix (Section~\ref{sec:accelerate}) while confirming that Newton refinement alone cannot substitute for the E-step interference cancellation that distinguishes Frac~SAGE.
+\textbf{NOMP} achieves RMSE = 0.146---its best per-path result and notably better than MF/OMP/SBL on this path. The Hann-windowed Newton refinement, operating on a clean window around $\tau \approx 60.7$, successfully pulls the estimate toward the true continuous delay. However, the absence of iterative interference cancellation (the outer SAGE loop) limits further improvement. This result validates the Newton fix (Section~\ref{sec:accelerate}) while confirming that Newton refinement alone cannot substitute for the E-step interference cancellation that distinguishes CD-SAGE.
 
-\textbf{SBL vs.\ OMP comparison:} SBL (0.163) slightly outperforms OMP (0.166) on this path. The Bayesian framework's automatic relevance determination partially suppresses the spurious correlation component from Path~1's residual, providing a marginal benefit over OMP's greedy atom selection. However, both remain an order of magnitude above the CRB, confirming that \textit{no dictionary-based method can match iterative EM interference cancellation for closely-spaced paths}. A further observation reinforces Frac~SAGE's advantage on this path: its \textit{phase} RMSE falls \textit{below} the single-path CRB at $\SNR \ge -5$~dB (ratio 0.86--0.96$\times$). This is possible because the phase CRB assumes isolated-path estimation, whereas the SAGE E-step jointly estimates Paths~1 and~2, effectively pooling information across paths. The interference cancellation reduces phase variance below the single-path bound---the same shrinkage mechanism that enables delay super-efficiency (Section~\ref{sec:results}).
+\textbf{SBL vs.\ OMP comparison:} SBL (0.163) slightly outperforms OMP (0.166) on this path. The Bayesian framework's automatic relevance determination partially suppresses the spurious correlation component from Path~1's residual, providing a marginal benefit over OMP's greedy atom selection. However, both remain an order of magnitude above the CRB, confirming that \textit{no dictionary-based method can match iterative EM interference cancellation for closely-spaced paths}. A further observation reinforces CD-SAGE's advantage on this path: its \textit{phase} RMSE falls \textit{below} the single-path CRB at $\SNR \ge -5$~dB (ratio 0.86--0.96$\times$). This is possible because the phase CRB assumes isolated-path estimation, whereas the SAGE E-step jointly estimates Paths~1 and~2, effectively pooling information across paths. The interference cancellation reduces phase variance below the single-path bound---the same shrinkage mechanism that enables delay super-efficiency (Section~\ref{sec:results}).
 
 \subsubsection{Path~3 --- The Isolated Path: Pure Grid-Mismatch Benchmark ($\tau_3 = 200.25$, $|\alpha_3| = 0.8$)}
 
 Path~3 is deliberately designed as a controlled experiment: placed at $\tau = 200.25$, exactly midway between grid points 200.0 and 200.5 (distance = 0.25 to either), and separated from Path~2 by 139.6 samples ($\gg$ the correlation main-lobe width). With negligible inter-path interference, all performance differences are attributable solely to each algorithm's ability to handle \textit{fractional-delay estimation}---the grid mismatch problem in its purest form.
 
-\textbf{Fractional SAGE} achieves RMSE = 0.0216, approaching the CRB of 0.0210 (efficiency = 1.03$\times$). The slight shortfall from the CRB is attributable to the 0.005-sample quantization of Stage~2's grid search: $\Delta^2/12 \approx 2.1\times 10^{-6}$, which when combined with the Stage~1 residual variance, produces a net RMSE $\sim 3\%$ above the CRB at this SNR.
+\textbf{CD-SAGE} achieves RMSE = 0.0216, approaching the CRB of 0.0210 (efficiency = 1.03$\times$). The slight shortfall from the CRB is attributable to the 0.005-sample quantization of Stage~2's grid search: $\Delta^2/12 \approx 2.1\times 10^{-6}$, which when combined with the Stage~1 residual variance, produces a net RMSE $\sim 3\%$ above the CRB at this SNR.
 
 \textbf{Integer SAGE} achieves RMSE = 0.25. With $\delta_3 = +0.25$, the nearest integer is $\tau = 200$ (error = 0.25). The RMSE exactly equals the grid offset because the path is isolated and strong enough that the integer-grid peak selection is deterministic at 0~dB SNR. This is the ideal case for integer SAGE---no path interference, moderate SNR---and yet the RMSE is 12$\times$ the CRB, demonstrating that \textit{the grid-mismatch error floor is structural, not noise-dependent}.
 
 \textbf{Dictionary methods (MF, OMP, SBL)} all achieve exactly RMSE = 0.25---the quantization floor. With the true delay at 200.25, the nearest grid points are 200.0 and 200.5, both at distance 0.25. Each method randomly selects one of these two grid points (depending on noise realization), producing identical RMSE. This triply-redundant confirmation (three methods, identical RMSE) provides the cleanest possible demonstration that \textit{grid-based methods are fundamentally bounded by the grid spacing}, regardless of the specific optimization criterion (matched filter, $\ell_0$ greedy, or Bayesian).
 
-\textbf{NOMP} achieves RMSE = 0.034, the best among non-SAGE methods and significantly better than the 0.25 grid floor. On this isolated path, the OMP initialization correctly identifies $k_{\text{opt}} = 200$, and the Hann-windowed Newton refinement converges to $\tau \approx 200.24$---within 0.01 samples of the true delay. The residual error of 0.034 (vs.\ 0.021 for Frac~SAGE) reflects the absence of the Stage~1 parabolic pre-estimate: NOMP's Newton iterations start from the integer grid point and must traverse the full 0.25-sample offset in 3 steps, accumulating small gradient errors from residual noise. This result validates the \textit{two-stage} design of Frac~SAGE: Stage~1 provides a coarse continuous estimate at $\mathcal{O}(1)$ cost, and Stage~2 eliminates the residual---a division of labor that NOMP's single-stage Newton refinement cannot replicate at the same accuracy. A subtle detail reinforces this interpretation: SBL's \textit{magnitude} RMSE on Path~3 is mildly non-monotonic with SNR (0.27--0.30, peaking at $-5$~dB). Bootstrap analysis confirms this variation is statistically significant (adjacent-SNR 95\% confidence intervals do not overlap). The root cause is a grid-point selection probability drift: at $\tau=200.25$, the two nearest grid points (200.0 and 200.5) are exactly equidistant, and SBL's Bayesian model selection shifts its preference between them as the noise level changes, producing slightly different matched amplitudes at each grid point and a systematic $\sim$0.03 RMSE modulation that is invisible to Frac~SAGE's continuous estimation.
+\textbf{NOMP} achieves RMSE = 0.034, the best among non-SAGE methods and significantly better than the 0.25 grid floor. On this isolated path, the OMP initialization correctly identifies $k_{\text{opt}} = 200$, and the Hann-windowed Newton refinement converges to $\tau \approx 200.24$---within 0.01 samples of the true delay. The residual error of 0.034 (vs.\ 0.021 for CD-SAGE) reflects the absence of the Stage~1 parabolic pre-estimate: NOMP's Newton iterations start from the integer grid point and must traverse the full 0.25-sample offset in 3 steps, accumulating small gradient errors from residual noise. This result validates the \textit{two-stage} design of CD-SAGE: Stage~1 provides a coarse continuous estimate at $\mathcal{O}(1)$ cost, and Stage~2 eliminates the residual---a division of labor that NOMP's single-stage Newton refinement cannot replicate at the same accuracy. A subtle detail reinforces this interpretation: SBL's \textit{magnitude} RMSE on Path~3 is mildly non-monotonic with SNR (0.27--0.30, peaking at $-5$~dB). Bootstrap analysis confirms this variation is statistically significant (adjacent-SNR 95\% confidence intervals do not overlap). The root cause is a grid-point selection probability drift: at $\tau=200.25$, the two nearest grid points (200.0 and 200.5) are exactly equidistant, and SBL's Bayesian model selection shifts its preference between them as the noise level changes, producing slightly different matched amplitudes at each grid point and a systematic $\sim$0.03 RMSE modulation that is invisible to CD-SAGE's continuous estimation.
 
 \subsubsection{Cross-Algorithm Synthesis}
 
@@ -628,36 +628,36 @@ Viewing the results \textit{across} paths reveals each algorithm's characteristi
 
 \item \textbf{NOMP} exhibits an \textit{interference-limited} profile: near-CRB performance on the isolated Path~3 (0.034), moderate accuracy on the dense Path~2 (0.146), and catastrophic failure on Path~1 (0.701) where the conflict-detection heuristic misfires. This inverted performance (worst on the strongest path) reveals that NOMP's Achilles' heel is not Newton convergence but the \textit{OMP initialization + ad-hoc conflict resolution}, which lacks the systematic interference cancellation of the SAGE E-step.
 
-\item \textbf{Fractional SAGE} is the only algorithm that achieves \textit{uniform near-CRB performance} across all three paths (0.0167, 0.0338, 0.0216). The CRB efficiency is 0.99--1.03$\times$, independent of path spacing, amplitude, or fractional offset. This uniformity is the strongest evidence for the two-stage design: Stage~1's parabolic interpolation handles the continuous-delay problem (eliminating the grid floor), while the SAGE iterative E-step handles the dense-multipath problem (eliminating inter-path interference).
+\item \textbf{CD-SAGE} is the only algorithm that achieves \textit{uniform near-CRB performance} across all three paths (0.0167, 0.0338, 0.0216). The CRB efficiency is 0.99--1.03$\times$, independent of path spacing, amplitude, or fractional offset. This uniformity is the strongest evidence for the two-stage design: Stage~1's parabolic interpolation handles the continuous-delay problem (eliminating the grid floor), while the SAGE iterative E-step handles the dense-multipath problem (eliminating inter-path interference).
 \end{itemize}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig_rmse_path1.png}
-\caption{Per-path RMSE vs.\ SNR for Path~1 ($\tau=50.43$, $|\alpha|=1.0$). Frac~SAGE achieves efficiency 0.99$\times$ CRB. Dictionary methods (MF, OMP, SBL) are limited by the 0.07-sample grid offset. NOMP diverges due to conflict-detection failure with nearby Path~2.}
+\caption{Per-path RMSE vs.\ SNR for Path~1 ($\tau=50.43$, $|\alpha|=1.0$). CD-SAGE achieves efficiency 0.99$\times$ CRB. Dictionary methods (MF, OMP, SBL) are limited by the 0.07-sample grid offset. NOMP diverges due to conflict-detection failure with nearby Path~2.}
 \label{fig:perpath1}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig_rmse_path2.png}
-\caption{Per-path RMSE vs.\ SNR for Path~2 ($\tau=60.66$, $|\alpha|=0.5$). The weakest path in dense multipath (10.2 samples from Path~1). Only Frac~SAGE achieves CRB-level accuracy via iterative E-step interference cancellation. All other algorithms suffer from path masking: Integer SAGE fails catastrophically (RMSE = 4.98); dictionary methods plateau at 0.16--0.19 due to residual Path~1 interference.}
+\caption{Per-path RMSE vs.\ SNR for Path~2 ($\tau=60.66$, $|\alpha|=0.5$). The weakest path in dense multipath (10.2 samples from Path~1). Only CD-SAGE achieves CRB-level accuracy via iterative E-step interference cancellation. All other algorithms suffer from path masking: Integer SAGE fails catastrophically (RMSE = 4.98); dictionary methods plateau at 0.16--0.19 due to residual Path~1 interference.}
 \label{fig:perpath2}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{fig_rmse_path3.png}
-\caption{Per-path RMSE vs.\ SNR for Path~3 ($\tau=200.25$, $|\alpha|=0.8$). An isolated path at the worst-case grid offset (0.25 from either grid point). Frac~SAGE achieves efficiency 1.03$\times$ CRB. Dictionary methods saturate exactly at RMSE = 0.25---the pure quantization floor. NOMP achieves 0.034 via Newton refinement, confirming that continuous-delay estimation is possible without SAGE iteration when paths are well-separated, but still falls short of the two-stage approach.}
+\caption{Per-path RMSE vs.\ SNR for Path~3 ($\tau=200.25$, $|\alpha|=0.8$). An isolated path at the worst-case grid offset (0.25 from either grid point). CD-SAGE achieves efficiency 1.03$\times$ CRB. Dictionary methods saturate exactly at RMSE = 0.25---the pure quantization floor. NOMP achieves 0.034 via Newton refinement, confirming that continuous-delay estimation is possible without SAGE iteration when paths are well-separated, but still falls short of the two-stage approach.}
 \label{fig:perpath3}
 \end{figure*}
 
-A single-trial channel estimation at $\SNR = 10$~dB visually confirms the per-path analysis. Fig.~\ref{fig:stem} shows the estimated channel impulse response for all six algorithms: Integer SAGE (black squares) places both Path~1 and Path~2 near $\tau=50$ (path masking), while Fractional SAGE (blue triangles) correctly resolves all three paths at their true continuous delays. Dictionary methods (MF, OMP, SBL) place Path~3 at either 200.0 or 200.5, visibly confirming the 0.25-sample quantization floor. NOMP (orange pentagons) resolves Path~3 to $\sim$200.24 but struggles with the closely-spaced pair due to conflict-detection misfires.
+A single-trial channel estimation at $\SNR = 10$~dB visually confirms the per-path analysis. Fig.~\ref{fig:stem} shows the estimated channel impulse response for all six algorithms: Integer SAGE (black squares) places both Path~1 and Path~2 near $\tau=50$ (path masking), while CD-SAGE (blue triangles) correctly resolves all three paths at their true continuous delays. Dictionary methods (MF, OMP, SBL) place Path~3 at either 200.0 or 200.5, visibly confirming the 0.25-sample quantization floor. NOMP (orange pentagons) resolves Path~3 to $\sim$200.24 but struggles with the closely-spaced pair due to conflict-detection misfires.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{fig_09_channel_stem_mat.png}
-\caption{Single-trial channel impulse response estimation (SNR=10~dB, grid=0.5). Main panel: full delay range. Sub-panels: per-path zoom views. Integer SAGE (black squares) misidentifies Path~2; dictionary methods (MF/OMP/SBL) exhibit the 0.25-sample grid bias on Path~3; Fractional SAGE (blue triangles) correctly estimates all three paths at their true continuous delays.}
+\caption{Single-trial channel impulse response estimation (SNR=10~dB, grid=0.5). Main panel: full delay range. Sub-panels: per-path zoom views. Integer SAGE (black squares) misidentifies Path~2; dictionary methods (MF/OMP/SBL) exhibit the 0.25-sample grid bias on Path~3; CD-SAGE (blue triangles) correctly estimates all three paths at their true continuous delays.}
 \label{fig:stem}
 \end{figure}
 
@@ -703,8 +703,8 @@ Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} isolate each component's co
 Method & FLOPs & Time (ms) & vs Int \\
 \midrule
 Int SAGE & $\bigO(L I N_r N_s)$ & \textbf{11.2} & 1$\times$ \\
-\textbf{Frac SAGE} (full) & $\bigO(L I (N_r \log N_r + N_r/\Delta))$ & 601.7 & 54$\times$ \\
-\textbf{Frac SAGE} (c2f) & $\bigO(L I (N_r \log N_r + 40))$ & \textbf{109.5} & 10$\times$ \\
+\textbf{CD-SAGE} (full) & $\bigO(L I (N_r \log N_r + N_r/\Delta))$ & 601.7 & 54$\times$ \\
+\textbf{CD-SAGE} (c2f) & $\bigO(L I (N_r \log N_r + 40))$ & \textbf{109.5} & 10$\times$ \\
 MF (381) & $\bigO(N_{\text{grid}} N_r)$ & 2.2 & 0.2$\times$ \\
 OMP & $\bigO(L N_{\text{grid}} N_r)$ & \textbf{6.9} & 0.6$\times$ \\
 NOMP & $\bigO(L N_r N_{\text{grid}})$ & 7.2 & 0.6$\times$ \\
@@ -713,11 +713,11 @@ SBL & $\bigO(I_{\text{EM}} N_{\text{grid}}^2)$ & 1804.9 & 161$\times$ \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:complexity} reports measured runtime alongside theoretical FLOPs (grid resolution 0.5~samples, 381 dictionary atoms). Int~SAGE is the fastest (\SI{11.2}{ms}) but suffers from grid mismatch. Frac~SAGE achieves a two-order-of-magnitude accuracy improvement at a \textbf{54$\times$ computational cost} (\SI{602}{ms}), remaining sub-second and within real-time constraints. With coarse-to-fine acceleration, the cost drops to 10$\times$ (\SI{110}{ms}). SBL is the slowest (\SI{1805}{ms}) due to its $\bigO(N_{\text{grid}}^2)$ Woodbury inversion on the 381-atom dictionary.
+Table~\ref{tab:complexity} reports measured runtime alongside theoretical FLOPs (grid resolution 0.5~samples, 381 dictionary atoms). Int~SAGE is the fastest (\SI{11.2}{ms}) but suffers from grid mismatch. CD-SAGE achieves a two-order-of-magnitude accuracy improvement at a \textbf{54$\times$ computational cost} (\SI{602}{ms}), remaining sub-second and within real-time constraints. With coarse-to-fine acceleration, the cost drops to 10$\times$ (\SI{110}{ms}). SBL is the slowest (\SI{1805}{ms}) due to its $\bigO(N_{\text{grid}}^2)$ Woodbury inversion on the 381-atom dictionary.
 
 \subsection{Grid Resolution Sensitivity and the Value of Continuous-Delay Estimation}
 
-A natural question is whether a sufficiently fine dictionary can match Fractional SAGE's performance---and, by extension, whether improving SAGE is necessary when dictionary-based alternatives exist. To answer this, we repeat the Monte Carlo experiment at a much finer grid resolution of 0.1~samples (1901 atoms), comparing the same five algorithms (SBL is excluded at this resolution because its Woodbury matrix $V \in \mathbb{C}^{1901\times 1901}$ requires $\mathcal{O}(1901^3)$ operations per EM iteration, making it computationally infeasible for practical use). Table~\ref{tab:grid_compare} presents the results.
+A natural question is whether a sufficiently fine dictionary can match CD-SAGE's performance---and, by extension, whether improving SAGE is necessary when dictionary-based alternatives exist. To answer this, we repeat the Monte Carlo experiment at a much finer grid resolution of 0.1~samples (1901 atoms), comparing the same five algorithms (SBL is excluded at this resolution because its Woodbury matrix $V \in \mathbb{C}^{1901\times 1901}$ requires $\mathcal{O}(1901^3)$ operations per EM iteration, making it computationally infeasible for practical use). Table~\ref{tab:grid_compare} presents the results.
 
 \begin{table}[t]
 \centering
@@ -729,7 +729,7 @@ A natural question is whether a sufficiently fine dictionary can match Fractiona
 Algorithm & grid 0.5 & grid 0.1 & Ratio & vs Frac \\
 \midrule
 Integer SAGE & 2.890 & 2.920 & 1.01$\times$ & --- \\
-\textbf{Fractional SAGE} & \textbf{0.0251} & \textbf{0.0244} & 0.97$\times$ & \textbf{1.0$\times$} \\
+\textbf{CD-SAGE} & \textbf{0.0251} & \textbf{0.0244} & 0.97$\times$ & \textbf{1.0$\times$} \\
 MF  & 0.187 & 0.050 & 0.27$\times$ & 2.0$\times$ \\
 OMP & 0.178 & 0.044 & 0.25$\times$ & \textbf{2.0$\times$} \\
 NOMP & 0.414 & 0.429 & 1.04$\times$ & --- \\
@@ -739,24 +739,24 @@ NOMP & 0.414 & 0.429 & 1.04$\times$ & --- \\
 
 Three conclusions emerge from Table~\ref{tab:grid_compare}:
 
-\textbf{1) Fractional SAGE is immune to grid resolution.} Its RMSE at \SI{0}{dB} is unchanged (0.0251 $\to$ 0.0244) because the two-stage estimator operates in the continuous delay domain and does not rely on a precomputed dictionary.
+\textbf{1) CD-SAGE is immune to grid resolution.} Its RMSE at \SI{0}{dB} is unchanged (0.0251 $\to$ 0.0244) because the two-stage estimator operates in the continuous delay domain and does not rely on a precomputed dictionary.
 
-\textbf{2) Dictionary methods benefit from finer grids but cannot catch Frac~SAGE.} MF and OMP improve by 73--75\% when the grid is refined from 0.5 to 0.1~samples, consistent with the grid-quantization floor dropping from $0.5/\sqrt{12} \approx 0.144$ to $0.1/\sqrt{12} \approx 0.029$~samples. However, even at 1901 atoms, OMP's RMSE (0.044) remains \textbf{2.0$\times$ above Frac~SAGE (0.024)}. The residual gap is caused by inter-path interference: Path~1 ($\tau=50.43$, $|\alpha|=1.0$) leaks into Path~2's ($\tau=60.66$, $|\alpha|=0.5$) dictionary correlation. This interference cannot be eliminated by refining the grid; it requires the iterative E-step interference cancellation unique to the SAGE framework.
+\textbf{2) Dictionary methods benefit from finer grids but cannot catch CD-SAGE.} MF and OMP improve by 73--75\% when the grid is refined from 0.5 to 0.1~samples, consistent with the grid-quantization floor dropping from $0.5/\sqrt{12} \approx 0.144$ to $0.1/\sqrt{12} \approx 0.029$~samples. However, even at 1901 atoms, OMP's RMSE (0.044) remains \textbf{2.0$\times$ above CD-SAGE (0.024)}. The residual gap is caused by inter-path interference: Path~1 ($\tau=50.43$, $|\alpha|=1.0$) leaks into Path~2's ($\tau=60.66$, $|\alpha|=0.5$) dictionary correlation. This interference cannot be eliminated by refining the grid; it requires the iterative E-step interference cancellation unique to the SAGE framework.
 
-\textbf{3) Dictionary methods face a resolution--complexity trade-off that Frac~SAGE avoids.} Refining the grid from 0.5 to 0.1 increases dictionary size 5$\times$, MF runtime 11.4$\times$ (2.2 $\to$ \SI{25.1}{ms}), OMP runtime 9.2$\times$ (6.9 $\to$ \SI{63.2}{ms}), and renders SBL infeasible. Frac~SAGE's runtime increases only 1.4$\times$ (602 $\to$ \SI{835}{ms}), because its cost is dominated by the \textit{number} of Stage~2 correlation evaluations (fixed at $\sim$200), not the dictionary size.
+\textbf{3) Dictionary methods face a resolution--complexity trade-off that CD-SAGE avoids.} Refining the grid from 0.5 to 0.1 increases dictionary size 5$\times$, MF runtime 11.4$\times$ (2.2 $\to$ \SI{25.1}{ms}), OMP runtime 9.2$\times$ (6.9 $\to$ \SI{63.2}{ms}), and renders SBL infeasible. CD-SAGE's runtime increases only 1.4$\times$ (602 $\to$ \SI{835}{ms}), because its cost is dominated by the \textit{number} of Stage~2 correlation evaluations (fixed at $\sim$200), not the dictionary size.
 
-\subsection{When Does Fractional SAGE Provide an Advantage?}
+\subsection{When Does CD-SAGE Provide an Advantage?}
 
-A related question is whether Frac~SAGE offers any benefit at low SNR, where thermal noise dominates. Table~\ref{tab:snr_regime} segments performance by SNR regime, showing that the advantage is SNR-dependent---and that this dependence is \textit{desirable}, not a weakness.
+A related question is whether CD-SAGE offers any benefit at low SNR, where thermal noise dominates. Table~\ref{tab:snr_regime} segments performance by SNR regime, showing that the advantage is SNR-dependent---and that this dependence is \textit{desirable}, not a weakness.
 
 \begin{table*}[t]
 \centering
-\caption{Fractional SAGE Advantage by SNR Regime (grid$\,$=$\,$0.1, 200 MC)}
+\caption{CD-SAGE Advantage by SNR Regime (grid$\,$=$\,$0.1, 200 MC)}
 \label{tab:snr_regime}
 \small
 \begin{tabular}{@{}ccccc@{}}
 \toprule
-SNR (dB) & Int SAGE & Best Dict. (OMP) & Frac SAGE & Frac/Dict Ratio \\
+SNR (dB) & Int SAGE & Best Dict. (OMP) & CD-SAGE & CD-SAGE/Dict Ratio \\
 \midrule
 $-15$ & 38.04 & 12.39 & 34.36 & 2.8$\times$ \textit{worse} \\
 $-10$ &  6.34 &  1.18 &  2.74 & 2.3$\times$ \textit{worse} \\
@@ -770,13 +770,13 @@ $+15$ &  3.35 &  0.041 & 0.005 & \textbf{8.2$\times$ better} \\
 
 The three SNR regimes have clear physical interpretations:
 
-\textbf{Noise-limited ($\SNR \le -10$~dB):} All estimators are dominated by thermal noise. The CRB itself is large, and no method---continuous or discrete---can overcome the fundamental information limit. Frac~SAGE's slightly \textit{worse} performance in this regime reflects the fact that its two-stage search occasionally selects a noise-induced false peak within the $\pm 0.5$ refinement window, whereas OMP's discrete search is constrained to the grid and less susceptible to this particular failure mode. This is not a fundamental limitation: below $-5$~dB, the channel is practically unusable regardless of the estimator.
+\textbf{Noise-limited ($\SNR \le -10$~dB):} All estimators are dominated by thermal noise. The CRB itself is large, and no method---continuous or discrete---can overcome the fundamental information limit. CD-SAGE's slightly \textit{worse} performance in this regime reflects the fact that its two-stage search occasionally selects a noise-induced false peak within the $\pm 0.5$ refinement window, whereas OMP's discrete search is constrained to the grid and less susceptible to this particular failure mode. This is not a fundamental limitation: below $-5$~dB, the channel is practically unusable regardless of the estimator.
 
-\textbf{Transition ($\SNR = -5$~dB):} Grid mismatch overtakes thermal noise as the dominant error source. Integer SAGE plateaus at $\sim$3~samples (the grid-mismatch floor), while Frac~SAGE drops sharply to 0.042, outperforming OMP for the first time. This is the minimum SNR at which fractional refinement provides a net benefit.
+\textbf{Transition ($\SNR = -5$~dB):} Grid mismatch overtakes thermal noise as the dominant error source. Integer SAGE plateaus at $\sim$3~samples (the grid-mismatch floor), while CD-SAGE drops sharply to 0.042, outperforming OMP for the first time. This is the minimum SNR at which fractional refinement provides a net benefit.
 
-\textbf{Grid-limited ($\SNR \ge 0$~dB):} Frac~SAGE's advantage grows monotonically with SNR because grid mismatch is structural---it does not diminish with increasing signal power---while Frac~SAGE's estimation error continues to track the CRB. At \SI{+15}{dB}, Frac~SAGE outperforms OMP by \textbf{8.2$\times$}. This is the operating regime for which the two-stage estimator is designed: SNR levels where the channel is viable, but integer-grid SAGE and dictionary methods are bottlenecked by discretization error.
+\textbf{Grid-limited ($\SNR \ge 0$~dB):} CD-SAGE's advantage grows monotonically with SNR because grid mismatch is structural---it does not diminish with increasing signal power---while CD-SAGE's estimation error continues to track the CRB. At \SI{+15}{dB}, CD-SAGE outperforms OMP by \textbf{8.2$\times$}. This is the operating regime for which the two-stage estimator is designed: SNR levels where the channel is viable, but integer-grid SAGE and dictionary methods are bottlenecked by discretization error.
 
-The practical significance is clear: Frac~SAGE does not need to outperform at \textit{all} SNR---it needs to outperform in the regime where communication actually occurs. Below $-5$~dB, no estimator can recover the channel; above $-5$~dB, Frac~SAGE provides an immediate and growing advantage.
+The practical significance is clear: CD-SAGE does not need to outperform at \textit{all} SNR---it needs to outperform in the regime where communication actually occurs. Below $-5$~dB, no estimator can recover the channel; above $-5$~dB, CD-SAGE provides an immediate and growing advantage.
 
 % ===========================================================================
 % SECTION 6: REAL-DATA VALIDATION ON WATERMARK BENCHMARK
@@ -784,7 +784,7 @@ The practical significance is clear: Frac~SAGE does not need to outperform at \t
 \section{Validation on Measured Multipath Channels}
 \label{sec:watermark}
 
-To validate Fractional SAGE on real multipath channel data with known ground truth, we use the Watermark benchmark~\cite{watermark2017}, a widely-adopted dataset of measured underwater acoustic channel impulse responses (CIRs). We select the NOF1 channel (Norway fjord, \SI{16000}{Hz} sampling rate, 258-tap delay spread of \SI{16}{ms}), which exhibits naturally occurring multipath with well-separated dominant paths.
+To validate CD-SAGE on real multipath channel data with known ground truth, we use the Watermark benchmark~\cite{watermark2017}, a widely-adopted dataset of measured underwater acoustic channel impulse responses (CIRs). We select the NOF1 channel (Norway fjord, \SI{16000}{Hz} sampling rate, 258-tap delay spread of \SI{16}{ms}), which exhibits naturally occurring multipath with well-separated dominant paths.
 
 \subsection{Experimental Design}
 
@@ -802,7 +802,7 @@ where $s(t)$ is the 511-point QPSK waveform and $\tau_i / M$ is the true delay i
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{mc_NOF1_paper.png}
-\caption{Delay RMSE vs.\ SNR for Watermark NOF1 at $M=4$ and $M=8$ (8 snapshots $\times$ 100 MC = 800 trials per SNR point). Frac~SAGE tracks the CRB across all SNR, while dictionary methods (MF, OMP, SBL) plateau at the 0.5-sample grid-quantization floor ($\sim$0.17--0.20). At $M=4$, Int~SAGE suffers from path masking (RMSE $\sim$4).}
+\caption{Delay RMSE vs.\ SNR for Watermark NOF1 at $M=4$ and $M=8$ (8 snapshots $\times$ 100 MC = 800 trials per SNR point). CD-SAGE tracks the CRB across all SNR, while dictionary methods (MF, OMP, SBL) plateau at the 0.5-sample grid-quantization floor ($\sim$0.17--0.20). At $M=4$, Int~SAGE suffers from path masking (RMSE $\sim$4).}
 \label{fig:watermark}
 \end{figure*}
 
@@ -810,9 +810,9 @@ Fig.~\ref{fig:watermark} and Table~\ref{tab:wm} present the results. Three regim
 
 \textbf{Low SNR ($-15$ to $-10$~dB):} All algorithms are noise-dominated with comparable RMSE. No method can overcome the thermal noise floor.
 
-\textbf{Transition ($-5$~dB):} Frac~SAGE sharply transitions to near-CRB performance (RMSE $\approx 0.05$ at $M=4$), while dictionary methods (MF, OMP, SBL) immediately hit the 0.5-sample grid-quantization floor at $\sim$0.17--0.20 samples, and Int~SAGE remains limited by path masking.
+\textbf{Transition ($-5$~dB):} CD-SAGE sharply transitions to near-CRB performance (RMSE $\approx 0.05$ at $M=4$), while dictionary methods (MF, OMP, SBL) immediately hit the 0.5-sample grid-quantization floor at $\sim$0.17--0.20 samples, and Int~SAGE remains limited by path masking.
 
-\textbf{High SNR ($0$ to $+15$~dB):} Frac~SAGE continues tracking the CRB (RMSE $0.027 \to 0.005$ at $M=4$), while all other algorithms exhibit flat floors independent of SNR. The dictionary methods' RMSE of 0.17--0.20 matches the theoretical quantization floor $\Delta/\sqrt{12} \approx 0.144$ for a 0.5-sample grid, with the excess attributable to residual inter-path interference.
+\textbf{High SNR ($0$ to $+15$~dB):} CD-SAGE continues tracking the CRB (RMSE $0.027 \to 0.005$ at $M=4$), while all other algorithms exhibit flat floors independent of SNR. The dictionary methods' RMSE of 0.17--0.20 matches the theoretical quantization floor $\Delta/\sqrt{12} \approx 0.144$ for a 0.5-sample grid, with the excess attributable to residual inter-path interference.
 
 \begin{table*}[t]
 \centering
@@ -821,7 +821,7 @@ Fig.~\ref{fig:watermark} and Table~\ref{tab:wm} present the results. Three regim
 \footnotesize
 \begin{tabular}{@{}ccrrrrrr@{}}
 \toprule
-$M$ & SNR (dB) & Int SAGE & \textbf{Frac SAGE} & MF & OMP & NOMP & SBL \\
+$M$ & SNR (dB) & Int SAGE & \textbf{CD-SAGE} & MF & OMP & NOMP & SBL \\
 \midrule
 \multirow{3}{*}{4} & $-5$  & 3.847 & \textbf{0.049} & 0.198 & 0.198 & 0.494 & 0.198 \\
                     & $0$   & 4.012 & \textbf{0.027} & 0.198 & 0.198 & 0.498 & 0.198 \\
@@ -837,10 +837,10 @@ $M$ & SNR (dB) & Int SAGE & \textbf{Frac SAGE} & MF & OMP & NOMP & SBL \\
 \subsection{Key Findings}
 
 \begin{enumerate}
-\item \textbf{Frac~SAGE is the only algorithm that tracks the CRB across all decimation factors and SNR.} At $M=4$ and \SI{0}{dB}, it achieves a \textbf{149$\times$ improvement} over Int~SAGE and a \textbf{7.3$\times$ advantage} over the best dictionary method.
+\item \textbf{CD-SAGE is the only algorithm that tracks the CRB across all decimation factors and SNR.} At $M=4$ and \SI{0}{dB}, it achieves a \textbf{149$\times$ improvement} over Int~SAGE and a \textbf{7.3$\times$ advantage} over the best dictionary method.
 \item \textbf{Dictionary methods are fundamentally bounded by grid quantization.} MF, OMP, and SBL all plateau at $\sim$0.17--0.20 samples for $\SNR \ge -5$~dB, exactly the 0.5-sample grid-quantization floor---the cleanest possible demonstration that discrete-grid methods cannot overcome the resolution limit of their dictionary.
-\item \textbf{Path masking is a real phenomenon on measured channels.} At $M=4$, two decimated CIR paths fall within the same integer-grid correlation lobe, causing Int~SAGE to fail catastrophically (RMSE $\approx 4$). Frac~SAGE's E-step interference cancellation resolves this masking, mirroring the Path~1/2 behavior in simulations (Section~\ref{sec:results}).
-\item \textbf{The two-stage design is validated on real data.} Frac~SAGE's RMSE of 0.027--0.029 at \SI{0}{dB} is nearly independent of decimation factor, confirming that continuous-delay estimation eliminates the grid-quantization floor on real, measured multipath channels.
+\item \textbf{Path masking is a real phenomenon on measured channels.} At $M=4$, two decimated CIR paths fall within the same integer-grid correlation lobe, causing Int~SAGE to fail catastrophically (RMSE $\approx 4$). CD-SAGE's E-step interference cancellation resolves this masking, mirroring the Path~1/2 behavior in simulations (Section~\ref{sec:results}).
+\item \textbf{The two-stage design is validated on real data.} CD-SAGE's RMSE of 0.027--0.029 at \SI{0}{dB} is nearly independent of decimation factor, confirming that continuous-delay estimation eliminates the grid-quantization floor on real, measured multipath channels.
 \end{enumerate}
 
 % ===========================================================================
@@ -859,7 +859,7 @@ This paper presented a two-stage fractional delay refinement strategy for SAGE-b
 \item \textbf{Experimental:} Monte Carlo simulations (500 trials for main results, 200 for grid sensitivity) and ablation studies confirm that Stage~2 is the dominant accuracy contributor (14$\times$ additional improvement), and that the full method achieves the CRB within 1.04--1.11$\times$ across $\SNR = -5$ to $+15$~dB. Validation on the Watermark benchmark (NOF1 Norway fjord channel, $8\times100 = 800$~MC trials per SNR) demonstrates a 149$\times$ improvement over integer SAGE and a 7.3$\times$ advantage over dictionary methods on real, measured multipath channels.
 \end{enumerate}
 
-The practical implication is clear: \textbf{Fractional SAGE eliminates the grid-quantization floor on real measured multipath channels while maintaining the computational efficiency of the SAGE framework}, making it a drop-in upgrade for any SAGE-based channel sounding system.
+The practical implication is clear: \textbf{CD-SAGE eliminates the grid-quantization floor on real measured multipath channels while maintaining the computational efficiency of the SAGE framework}, making it a drop-in upgrade for any SAGE-based channel sounding system.
 
 \textbf{Limitations and future work.} The current Newton refinement implementation, after correcting a derivative sign error and applying Hann windowing, converges stably but plateaus at $\sim$0.37~samples RMSE due to integer-grid OMP initialization limitations for closely-spaced paths. Replacing the integer-grid OMP with a dictionary-based initialization would further improve NOMP accuracy. Extension to time-varying channels with Doppler estimation and integration with deep unfolding architectures represent natural next steps.
 

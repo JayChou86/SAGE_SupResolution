@@ -10,6 +10,12 @@ import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times'],'font.size':11})
 
+# Sub-panel label utility — adds (a),(b),(c) to top-left of axes
+def _add_sublabels(axes, ox=-0.08, oy=1.02):
+    for i, ax in enumerate(axes):
+        ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
+                fontsize=12, fontweight='bold', ha='left', va='bottom')
+
 CH='NOF1'; MAT=f'D:/DataSet/Watermark/input/channels/{CH}/mat/{CH}_025.mat'
 d=sio.loadmat(MAT); h_all=d['h']; fs_tau=float(d['fs_tau'][0,0])
 SEED=42; rng=np.random.RandomState(SEED); np.random.seed(SEED)
@@ -79,21 +85,21 @@ for M in [2,4,8]:
     _time_acc[:]=0
     np.savez(f'{OUT}/mc_NOF1_M{M}.npz',SNR=SNRs,rmse=results,algo_names=an,M=M,fs_target=fs_target)
 
-# Generate figure
-fig,axes=plt.subplots(1,3,figsize=(17,5))
-for mi,M in enumerate([2,4,8]):
+# Generate figure — 2 panels for paper (M=4, M=8)
+fig,axes=plt.subplots(1,2,figsize=(12,5))
+_add_sublabels(axes)
+for mi,M in enumerate([4,8]):
     d=np.load(f'{OUT}/mc_NOF1_M{M}.npz')
     ax=axes[mi]
     for a in range(nA):
         ax.semilogy(SNRs,d['rmse'][:,a],color=colors[a],marker=markers[a],
                    linestyle=ls[a],lw=1.8,ms=7,label=an[a],markerfacecolor='none')
-    ax.set_title(f'M={M} (f_s={fs_tau/M:.0f} Hz)',fontsize=12)
-    ax.set_xlabel('SNR (dB)'); ax.set_ylabel('Delay RMSE (samples)')
+    ax.set_title(f'M={M} ($f_s$={fs_tau/M:.0f} Hz)',fontsize=12)
+    ax.set_xlabel('SNR (dB)'); ax.set_ylabel('Delay RMSE (ms)')
     ax.legend(fontsize=7,loc='best'); ax.grid(alpha=0.3,which='both')
-fig.suptitle(f'Watermark NOF1 MC Validation — {len(snaps)} snaps × {MC} trials ({MC*len(snaps)} per SNR)',fontsize=13)
 fig.tight_layout()
-fig.savefig(f'{OUT}/mc_NOF1_all.png',dpi=200,bbox_inches='tight'); plt.close()
-print(f"\nSaved {OUT}/mc_NOF1_all.png")
+fig.savefig(f'{OUT}/mc_NOF1_paper.png',dpi=200,bbox_inches='tight'); plt.close()
+print(f"\nSaved {OUT}/mc_NOF1_paper.png")
 
 # Summary table
 print(f"\n{'='*70}")

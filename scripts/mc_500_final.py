@@ -9,6 +9,12 @@ from sage.evaluation import match_paths
 
 plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times'],'font.size':11,'mathtext.fontset':'stix'})
 
+# Sub-panel label utility — adds (a),(b),(c) to top-left of axes
+def _add_sublabels(axes, ox=-0.08, oy=1.02):
+    for i, ax in enumerate(axes):
+        ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
+                fontsize=12, fontweight='bold', ha='left', va='bottom')
+
 SNR_dB_vec=np.arange(-15,20,5); GRID_RES=0.5; NUM_MC=500; SEED=40
 rng=np.random.RandomState(SEED); np.random.seed(SEED)
 N_seq,N_rx,L=511,1000,3
@@ -80,30 +86,32 @@ np.savez(os.path.join(OUT,'mc_results.npz'),
 print("Saved NPZ")
 
 # Generate per-path figures
+ylabels=['Delay RMSE (ms)','Magnitude RMSE','Phase RMSE (rad)']
 for p in range(L):
     fig,axes=plt.subplots(1,3,figsize=(17,5))
-    titles=['(a) Delay RMSE','(b) Magnitude RMSE','(c) Phase RMSE']
+    _add_sublabels(axes)
+    titles=['Delay RMSE','Magnitude RMSE','Phase RMSE']
     for ax_idx,(ax,title,dat,cb) in enumerate(zip(axes,titles,[per_d[:,:,p],per_m[:,:,p],per_p[:,:,p]],[crb_d_arr[:,p],crb_m_arr[:,p],crb_p_arr[:,p]])):
         for alg in range(nA):
             ax.semilogy(SNR_dB_vec,dat[:,alg],color=colors[alg],marker=markers[alg],linestyle=ls[alg],lw=1.8,ms=7,label=str(an[alg]),markerfacecolor='none')
         ax.semilogy(SNR_dB_vec,cb,'r-',lw=2.5,label='CRB',zorder=10)
-        ax.set_xlabel('SNR (dB)'); ax.set_ylabel('RMSE'); ax.set_title(title)
+        ax.set_xlabel('SNR (dB)'); ax.set_ylabel(ylabels[ax_idx]); ax.set_title(title)
         ax.legend(fontsize=7,loc='best'); ax.grid(alpha=0.3,which='both'); ax.set_xlim([-17,17])
-    fig.suptitle(f'{path_labels[p]} — Per-Path RMSE vs SNR (grid={GRID_RES}, {NUM_MC} MC)',fontsize=13)
     fig.tight_layout()
     fn=os.path.join(OUT,f'fig_rmse_path{p+1}.png')
     fig.savefig(fn,dpi=1200,bbox_inches='tight'); plt.close(fig)
     print(f'Saved: {fn}')
 
 # Overall figure
+ylabels=['Delay RMSE (ms)','Magnitude RMSE','Phase RMSE (rad)']
 fig,axes=plt.subplots(1,3,figsize=(17,5))
-for ax_idx,(ax,title,dat,cb) in enumerate(zip(axes,['(a) Delay RMSE','(b) Magnitude RMSE','(c) Phase RMSE'],[rmse_d,rmse_m,rmse_p],[np.sqrt(np.mean(crb_d_arr**2,axis=1)),np.sqrt(np.mean(crb_m_arr**2,axis=1)),np.sqrt(np.mean(crb_p_arr**2,axis=1))])):
+_add_sublabels(axes)
+for ax_idx,(ax,title,dat,cb) in enumerate(zip(axes,['Delay RMSE','Magnitude RMSE','Phase RMSE'],[rmse_d,rmse_m,rmse_p],[np.sqrt(np.mean(crb_d_arr**2,axis=1)),np.sqrt(np.mean(crb_m_arr**2,axis=1)),np.sqrt(np.mean(crb_p_arr**2,axis=1))])):
     for alg in range(nA):
         ax.semilogy(SNR_dB_vec,dat[:,alg],color=colors[alg],marker=markers[alg],linestyle=ls[alg],lw=1.8,ms=7,label=str(an[alg]),markerfacecolor='none')
     ax.semilogy(SNR_dB_vec,cb,'r-',lw=2.5,label='CRB',zorder=10)
-    ax.set_xlabel('SNR (dB)'); ax.set_ylabel('RMSE'); ax.set_title(title)
+    ax.set_xlabel('SNR (dB)'); ax.set_ylabel(ylabels[ax_idx]); ax.set_title(title)
     ax.legend(fontsize=7,loc='best'); ax.grid(alpha=0.3,which='both'); ax.set_xlim([-17,17])
-fig.suptitle(f'Overall RMSE vs SNR (grid={GRID_RES}, {NUM_MC} MC, avg over 3 paths)',fontsize=13)
 fig.tight_layout()
 fn=os.path.join(OUT,'fig_rmse_overall.png')
 fig.savefig(fn,dpi=1200,bbox_inches='tight'); plt.close()

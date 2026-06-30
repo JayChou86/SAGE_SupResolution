@@ -18,9 +18,13 @@ specs = [
     dict(d=0.25, y=[0.210, 0.930, 0.650]),   # dh鈮?.220, gap鈮?.03
     dict(d=0.43, y=[0.294, 0.780, 0.720]),   # dh鈮?.390, gap鈮?.04
 ]
-titles = ['(a) $\\delta$=0.00 (on-grid)', '(b) $\\delta$=0.25', '(c) $\\delta$=0.43 (off-grid)']
+titles = ['$\\delta$=0.00 (on-grid)', '$\\delta$=0.25', '$\\delta$=0.43 (off-grid)']
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 4.8))
+# Sub-panel labels (a)(b)(c) on left
+for i, ax in enumerate(axes):
+    ax.text(-0.08, 1.02, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
+            fontsize=12, fontweight='bold', ha='left', va='bottom')
 
 for ax, sp, title in zip(axes, specs, titles):
     d = sp['d']
@@ -94,7 +98,7 @@ for ax, sp, title in zip(axes, specs, titles):
                 fontsize=9, color='blue',
                 arrowprops=dict(arrowstyle='->', color='blue', lw=1.0))
 
-    ax.set_xlabel('Offset from $k_{\\rm opt}$ (samples)')
+    ax.set_xlabel('Offset from $k_{\\rm opt}$ (ms)')
     ax.set_title(title, fontsize=12)
     ax.grid(alpha=0.2)
     ax.set_xlim([-1.5, 1.5])
@@ -103,8 +107,8 @@ for ax, sp, title in zip(axes, specs, titles):
         ax.set_ylabel('$|R(\\tau)|^2$')
         ax.legend(fontsize=8.5, loc='upper right')
 
-fig.suptitle('Parabolic Interpolation 鈥?Three-Point Quadratic Fit (Stage 1)',
-             fontsize=14)
+#fig.suptitle('Parabolic Interpolation 鈥?Three-Point Quadratic Fit (Stage 1)',
+ #            fontsize=14)
 fig.tight_layout()
 fig.savefig(os.path.join(R, 'fig_03_v12_final.png'), dpi=1200, bbox_inches='tight')
 plt.close()

@@ -12,6 +12,12 @@ import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times'],'font.size':11})
 
+# Sub-panel label utility — adds (a),(b),(c) to top-left of axes
+def _add_sublabels(axes, ox=-0.08, oy=1.02):
+    for i, ax in enumerate(axes):
+        ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
+                fontsize=12, fontweight='bold', ha='left', va='bottom')
+
 # ===================================================================
 CHANNEL = 'NOF1'
 MAT_FILE = f'D:/DataSet/Watermark/input/channels/{CHANNEL}/mat/{CHANNEL}_025.mat'
@@ -100,8 +106,8 @@ for M in DECIMATIONS:
     for a in range(nA):
         ax.semilogy(SNRs, rmse_all[:,a], color=colors[a], marker=markers[a],
                    linestyle=ls[a], lw=1.8, ms=7, label=algo_names[a], markerfacecolor='none')
-    ax.set_xlabel('SNR (dB)'); ax.set_ylabel('Delay RMSE (samples)')
-    ax.set_title(f'Watermark {CHANNEL} — M={M} (fs={fs_target:.0f} Hz, {N_SNAPSHOTS} snaps)')
+    ax.set_xlabel('SNR (dB)'); ax.set_ylabel('Delay RMSE (ms)')
+    ax.set_title(f'Watermark {CHANNEL} — M={M}', fontsize=11)
     ax.legend(fontsize=7); ax.grid(alpha=0.3, which='both')
     fig.tight_layout()
     fig.savefig(os.path.join(OUT,f'watermark_{CHANNEL}_M{M}_all.png'),dpi=200,bbox_inches='tight')

@@ -1,0 +1,94 @@
+\begin{thebibliography}{16}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Article
+\bibitem[{Chi and {Ferreira Da Costa}(2020)}]{chi2020}
+\bibinfo{author}{Chi, Y.}, \bibinfo{author}{{Ferreira Da Costa}, M.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Harnessing sparsity over the continuum: Atomic norm minimization for superresolution}.
+\newblock \bibinfo{journal}{IEEE Signal Process. Mag.} \bibinfo{volume}{37}, \bibinfo{pages}{39--57}.
+%Type = Article
+\bibitem[{Eggen et~al.(2001)Eggen, Baggeroer and Preisig}]{eggen2001}
+\bibinfo{author}{Eggen, T.H.}, \bibinfo{author}{Baggeroer, A.B.}, \bibinfo{author}{Preisig, J.C.}, \bibinfo{year}{2001}.
+\newblock \bibinfo{title}{Communication over {D}oppler spread channels---{P}art~{I}: Channel and receiver models}.
+\newblock \bibinfo{journal}{IEEE J. Ocean. Eng.} \bibinfo{volume}{26}, \bibinfo{pages}{62--71}.
+%Type = Article
+\bibitem[{Fessler and Hero(1994)}]{fessler1994}
+\bibinfo{author}{Fessler, J.A.}, \bibinfo{author}{Hero, A.O.}, \bibinfo{year}{1994}.
+\newblock \bibinfo{title}{Space-alternating generalized expectation-maximization algorithm}.
+\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{42}, \bibinfo{pages}{2664--2677}.
+%Type = Article
+\bibitem[{Fleury et~al.(1999)Fleury, Tschudin, Heddergott, Dahlhaus and Pedersen}]{fleury1999}
+\bibinfo{author}{Fleury, B.H.}, \bibinfo{author}{Tschudin, M.}, \bibinfo{author}{Heddergott, R.}, \bibinfo{author}{Dahlhaus, D.}, \bibinfo{author}{Pedersen, K.I.}, \bibinfo{year}{1999}.
+\newblock \bibinfo{title}{Channel parameter estimation in mobile radio environments using the {SAGE} algorithm}.
+\newblock \bibinfo{journal}{IEEE J. Sel. Areas Commun.} \bibinfo{volume}{17}, \bibinfo{pages}{434--450}.
+%Type = Book
+\bibitem[{Kay(1993)}]{kay1993}
+\bibinfo{author}{Kay, S.M.}, \bibinfo{year}{1993}.
+\newblock \bibinfo{title}{Fundamentals of Statistical Signal Processing: Estimation Theory}.
+\newblock \bibinfo{publisher}{Prentice-Hall}, \bibinfo{address}{Upper Saddle River, NJ}.
+%Type = Article
+\bibitem[{Kiefer(1953)}]{kiefer1953}
+\bibinfo{author}{Kiefer, J.}, \bibinfo{year}{1953}.
+\newblock \bibinfo{title}{Sequential minimax search for a maximum}.
+\newblock \bibinfo{journal}{Proc. Amer. Math. Soc.} \bibinfo{volume}{4}, \bibinfo{pages}{502--506}.
+%Type = Article
+\bibitem[{Mamandipoor et~al.(2016)Mamandipoor, Ramasamy and Madhow}]{mamandipoor2016}
+\bibinfo{author}{Mamandipoor, B.}, \bibinfo{author}{Ramasamy, D.}, \bibinfo{author}{Madhow, U.}, \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{{N}ewtonized orthogonal matching pursuit: Frequency estimation over the continuum}.
+\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{64}, \bibinfo{pages}{5066--5081}.
+%Type = Article
+\bibitem[{Moddemeijer(1991)}]{moddemeijer1991}
+\bibinfo{author}{Moddemeijer, R.}, \bibinfo{year}{1991}.
+\newblock \bibinfo{title}{On the determination of the position of extrema of sampled correlators}.
+\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{39}, \bibinfo{pages}{216--219}.
+%Type = Inproceedings
+\bibitem[{Pati et~al.(1993)Pati, Rezaiifar and Krishnaprasad}]{pati1993}
+\bibinfo{author}{Pati, Y.C.}, \bibinfo{author}{Rezaiifar, R.}, \bibinfo{author}{Krishnaprasad, P.S.}, \bibinfo{year}{1993}.
+\newblock \bibinfo{title}{Orthogonal matching pursuit: Recursive function approximation with applications to wavelet decomposition}, in: \bibinfo{booktitle}{Proc. Asilomar Conf. Signals, Systems and Computers}, pp. \bibinfo{pages}{40--44}.
+%Type = Article
+\bibitem[{Safari et~al.(2021)Safari, Daei and Haddadi}]{safari2021}
+\bibinfo{author}{Safari, M.}, \bibinfo{author}{Daei, S.}, \bibinfo{author}{Haddadi, F.}, \bibinfo{year}{2021}.
+\newblock \bibinfo{title}{Off-the-grid recovery of time and frequency shifts with multiple measurement vectors}.
+\newblock \bibinfo{journal}{Signal Process.} \bibinfo{volume}{183}, \bibinfo{pages}{107986}.
+%Type = Article
+\bibitem[{Schmidt(1986)}]{schmidt1986}
+\bibinfo{author}{Schmidt, R.}, \bibinfo{year}{1986}.
+\newblock \bibinfo{title}{Multiple emitter location and signal parameter estimation}.
+\newblock \bibinfo{journal}{IEEE Trans. Antennas Propag.} \bibinfo{volume}{34}, \bibinfo{pages}{276--280}.
+%Type = Article
+\bibitem[{Stojanovic and Preisig(2009)}]{stojanovic2009}
+\bibinfo{author}{Stojanovic, M.}, \bibinfo{author}{Preisig, J.}, \bibinfo{year}{2009}.
+\newblock \bibinfo{title}{Underwater acoustic communication channels: Propagation models and statistical characterization}.
+\newblock \bibinfo{journal}{IEEE Commun. Mag.} \bibinfo{volume}{47}, \bibinfo{pages}{84--89}.
+%Type = Article
+\bibitem[{Svilainis et~al.(2013)Svilainis, Dumbrava, Chaziachmetovas and Aleksandrovas}]{svilainis2013}
+\bibinfo{author}{Svilainis, L.}, \bibinfo{author}{Dumbrava, V.}, \bibinfo{author}{Chaziachmetovas, A.}, \bibinfo{author}{Aleksandrovas, A.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Subsample interpolation bias error in time of flight estimation by direct correlation in digital domain}.
+\newblock \bibinfo{journal}{Measurement} \bibinfo{volume}{46}, \bibinfo{pages}{3950--3958}.
+%Type = Article
+\bibitem[{Tang et~al.(2013)Tang, Bhaskar, Shah and Recht}]{tang2013}
+\bibinfo{author}{Tang, G.}, \bibinfo{author}{Bhaskar, B.N.}, \bibinfo{author}{Shah, P.}, \bibinfo{author}{Recht, B.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Compressed sensing off the grid}.
+\newblock \bibinfo{journal}{IEEE Trans. Inf. Theory} \bibinfo{volume}{59}, \bibinfo{pages}{7465--7490}.
+%Type = Article
+\bibitem[{{van Walree} et~al.(2017){van Walree}, Socheleau, Otnes and Jenserud}]{watermark2017}
+\bibinfo{author}{{van Walree}, P.A.}, \bibinfo{author}{Socheleau, F.X.}, \bibinfo{author}{Otnes, R.}, \bibinfo{author}{Jenserud, T.}, \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{The {W}atermark benchmark for underwater acoustic modulation schemes}.
+\newblock \bibinfo{journal}{IEEE J. Ocean. Eng.} \bibinfo{volume}{42}, \bibinfo{pages}{1007--1018}.
+%Type = Article
+\bibitem[{Wipf and Rao(2004)}]{wipf2004}
+\bibinfo{author}{Wipf, D.P.}, \bibinfo{author}{Rao, B.D.}, \bibinfo{year}{2004}.
+\newblock \bibinfo{title}{Sparse {B}ayesian learning for basis selection}.
+\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{52}, \bibinfo{pages}{2153--2164}.
+
+\end{thebibliography}

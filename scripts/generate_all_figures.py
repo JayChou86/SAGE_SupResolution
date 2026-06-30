@@ -28,6 +28,12 @@ plt.rcParams.update({
     'figure.facecolor': 'white', 'axes.facecolor': 'white',
 })
 
+# Sub-panel label utility — adds (a),(b),(c) to top-left of axes
+def _add_sublabels(axes, ox=-0.08, oy=1.02):
+    for i, ax in enumerate(axes):
+        ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
+                fontsize=12, fontweight='bold', ha='left', va='bottom')
+
 RESULTS = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
 os.makedirs(RESULTS, exist_ok=True)
 
@@ -79,6 +85,7 @@ print(f"Signal: N_seq={N_SEQ}, c={C_VAL:.4f}, ||s'||^2={ENERGY_SP:.4f}")
 
 def fig_01():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    _add_sublabels([ax1, ax2])
 
     # 鈹€鈹€ (a) Mechanism 鈹€鈹€
     tau = np.linspace(-2.5, 6.5, 500)
@@ -99,8 +106,8 @@ def fig_01():
     ax1.text((k_nearest + tau_true)/2, 0.18, '$\\delta$', ha='center',
              fontsize=12, color='darkred')
     ax1.axvline(k_nearest, color='gray', ls=':', lw=1, alpha=0.5, label=f'Integer grid $k={k_nearest}$')
-    ax1.set_xlabel('Delay (samples)'); ax1.set_ylabel('$|C(\\tau)|^2$')
-    ax1.set_title('(a) Grid Mismatch Mechanism')
+    ax1.set_xlabel('Delay (ms)'); ax1.set_ylabel('$|C(\\tau)|^2$')
+    ax1.set_title('Grid Mismatch Mechanism')
     ax1.legend(fontsize=9); ax1.grid(alpha=0.3); ax1.set_ylim([0, 1.15])
 
     # 鈹€鈹€ (b) Conceptual RMSE 鈥?curve formulas from figs_1_4_bare.py 鈹€鈹€
@@ -112,12 +119,9 @@ def fig_01():
     ax2.semilogy(snr, rmse_int,  'ks--', lw=2, ms=7, label='Integer SAGE')
     ax2.semilogy(snr, rmse_frac, 'b^-', lw=2, ms=7, label='CD-SAGE')
     ax2.semilogy(snr, crb,       'r-',  lw=2, ms=7, label='CRB')
-    ax2.fill_between([15, 30], 2.5, 4, alpha=0.08, color='gray')
-    ax2.annotate('Grid mismatch\nfloor', xy=(22, 3.2), ha='center', fontsize=9,
-                 color='#555555')
 
-    ax2.set_xlabel('SNR (dB)'); ax2.set_ylabel('Delay RMSE (samples)')
-    ax2.set_title('(b) RMSE vs SNR $-$ Conceptual')
+    ax2.set_xlabel('SNR (dB)'); ax2.set_ylabel('Delay RMSE (ms)')
+    ax2.set_title('RMSE vs SNR $-$ Conceptual')
     ax2.legend(fontsize=9); ax2.grid(alpha=0.3, which='both')
     ax2.set_xlim([-10, 30]); ax2.set_ylim([5e-3, 20])
 
@@ -201,7 +205,7 @@ def fig_02():
     arr(3.05, 1.5, 3.05, 0.8, style='arc', c='#FF6F00')
     ax.text(5.5, 10.5, 'next iter', fontsize=7, color='#FF6F00', style='italic')
 
-    ax.set_title('Two-Stage CD-SAGE Algorithm', fontsize=14, pad=15)
+    ax.set_title('', fontsize=14, pad=15)  # title omitted
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_02_flowchart.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
@@ -214,10 +218,11 @@ def fig_02():
 def fig_03():
     """Parabolic interpolation 鈥?per README_FIGURES.md spec."""
     deltas = [0.0, 0.25, 0.43]
-    titles = ['(a) $\\delta$=0.00 (on-grid)', '(b) $\\delta$=0.25', '(c) $\\delta$=0.43 (off-grid)']
+    titles = ['$\\delta$=0.00 (on-grid)', '$\\delta$=0.25', '$\\delta$=0.43 (off-grid)']
     c_use = 1.5
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
+    _add_sublabels(axes)
 
     for ax, d, title in zip(axes, deltas, titles):
         x_dense = np.linspace(-1.5, 1.5, 300)
@@ -250,7 +255,6 @@ def fig_03():
         ax.grid(alpha=0.3); ax.set_xlim([-1.5, 1.5]); ax.set_ylim([-0.05, 1.1])
         ax.legend(fontsize=8, loc='upper right')
 
-    fig.suptitle('Parabolic Interpolation (Stage 1)', fontsize=13)
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_03_parabolic.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
@@ -266,6 +270,7 @@ def fig_04():
     np.random.seed(42)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    _add_sublabels([ax1, ax2])
 
     # (a) Coarse
     tau_c = np.arange(49.6, 51.45, 0.05)
@@ -277,8 +282,8 @@ def fig_04():
     ax1.plot(tau_c[idx_c], f_c[idx_c], 'r*', ms=15, zorder=5)
     sh_l, sh_h = tau_c[idx_c]-0.06, tau_c[idx_c]+0.06
     ax1.axvspan(sh_l, sh_h, alpha=0.15, color='orange', label='Fine zone')
-    ax1.set_xlabel('Delay (samples)'); ax1.set_ylabel('$|C(\\tau)|^2$')
-    ax1.set_title('(a) Pass 1: Coarse Search ($\\Delta=0.05$)')
+    ax1.set_xlabel('Delay (ms)'); ax1.set_ylabel('$|C(\\tau)|^2$')
+    ax1.set_title('Pass 1: Coarse Search ($\\Delta=0.05$)')
     ax1.legend(fontsize=8); ax1.grid(alpha=0.3)
 
     # (b) Fine
@@ -289,11 +294,11 @@ def fig_04():
     idx_f = np.argmax(f_f)
     ax2.axvline(tau_f[idx_f], color='darkred', ls=':', lw=2, label=f'$\\tau^*={tau_f[idx_f]:.3f}$')
     ax2.plot(tau_f[idx_f], f_f[idx_f], 'r*', ms=15, zorder=5)
-    ax2.set_xlabel('Delay (samples)'); ax2.set_ylabel('$|C(\\tau)|^2$')
-    ax2.set_title('(b) Pass 2: Fine Search ($\\Delta=0.005$)')
+    ax2.set_xlabel('Delay (ms)'); ax2.set_ylabel('$|C(\\tau)|^2$')
+    ax2.set_title('Pass 2: Fine Search ($\\Delta=0.005$)')
     ax2.legend(fontsize=8); ax2.grid(alpha=0.3)
 
-    fig.suptitle('Stage 2: Local Grid Refinement', fontsize=13)
+    #fig.suptitle('Stage 2: Local Grid Refinement', fontsize=13)
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_04_localrefine.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
@@ -325,9 +330,9 @@ def fig_05():
     ax.axvline(-1, color='gray', ls=':', alpha=0.5)
     ax.axvline(0, color='gray', ls=':', alpha=0.5)
     ax.axvline(1, color='gray', ls=':', alpha=0.5)
-    ax.set_xlabel('Delay offset $\\tau$ (samples)')
+    ax.set_xlabel('Delay offset $\\tau$ (ms)')
     ax.set_ylabel('$|R(\\tau)|$')
-    ax.set_title('Autocorrelation vs Quadratic Approximation')
+    # title omitted per paper style
     ax.legend(fontsize=9); ax.grid(alpha=0.3); ax.set_xlim([-3, 3]); ax.set_ylim([-0.05, 1.05])
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_05_autocorrelation.png'), dpi=1200, bbox_inches='tight')
@@ -363,8 +368,8 @@ def fig_06():
               label='CRB $=1/(2\\cdot\\mathrm{SNR}\\cdot\\|s\'\\|^2)$')
     ax.axhline(int_mse, color='gray', ls=':', lw=2, label=f'Integer MSE $=\\delta^2={int_mse:.4f}$')
     ax.set_xlabel('SNR (dB)')
-    ax.set_ylabel('Variance / MSE (samples$^2$)')
-    ax.set_title(f'Variance of $\\hat{{\\delta}}$ vs SNR ($\\delta={delta_f}$)')
+    ax.set_ylabel('Variance / MSE (ms$^2$)')
+    # title omitted per paper style
     ax.legend(fontsize=9); ax.grid(alpha=0.3, which='both')
     ax.set_ylim([5e-7, 2])
     fig.tight_layout()
@@ -404,23 +409,23 @@ def fig_07():
     eff = thm_var / crb_v
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    _add_sublabels([ax1, ax2])
 
     ax1.plot(deltas, bias*1000, 'b-', lw=1.5)
     ax1.axhline(0, color='gray', ls='--')
     ax1.set_xlabel('True fractional delay $\\delta$')
-    ax1.set_ylabel('Bias ($\\times 10^{-3}$ samples)')
-    ax1.set_title('(a) Deterministic Bias (quartic model)')
+    ax1.set_ylabel('Bias ($\\times 10^{-3}$ ms)')
+    ax1.set_title('Deterministic Bias (quartic model)')
     ax1.grid(alpha=0.3)
 
     ax2.plot(snr_db, eff, 'rs-', lw=2, ms=8)
     ax2.axhline(0.93, color='blue', ls=':', lw=2, label='Theorem 2: 0.93')
     ax2.axhline(1.0, color='gray', ls='--', lw=1)
     ax2.set_xlabel('SNR (dB)'); ax2.set_ylabel('$\\mathrm{Var}(\\hat{\\delta}) / \\mathrm{CRB}$')
-    ax2.set_title('(b) CRB Efficiency Ratio')
+    ax2.set_title('CRB Efficiency Ratio')
     ax2.legend(fontsize=9); ax2.grid(alpha=0.3)
     ax2.set_ylim([0, 2])
 
-    fig.suptitle('Parabolic Estimator: Bias & CRB Efficiency', fontsize=13)
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_07_bias_efficiency.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
@@ -437,8 +442,9 @@ def fig_08():
     num_alg = len(ALGO_NAMES)
 
     fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+    _add_sublabels(axes)
     titles = ['Delay', 'Magnitude', 'Phase']
-    data = [(RMSE_D, CRB_D, 'Delay RMSE (samples)', [5e-4, 200]),
+    data = [(RMSE_D, CRB_D, 'Delay RMSE (ms)', [5e-4, 200]),
             (RMSE_M, CRB_M, 'Magnitude RMSE', None),
             (RMSE_P, CRB_P, 'Phase RMSE (rad)', None)]
 
@@ -455,8 +461,6 @@ def fig_08():
         if ylim: ax.set_ylim(ylim)
         if title == 'Delay': ax.legend(fontsize=7, loc='lower left')
 
-    fig.suptitle('Multi-path Parameter Estimation Performance (500 MC Trials)',
-                 fontsize=14)
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_08_rmse_vs_snr.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
@@ -495,7 +499,7 @@ def fig_09():
     for t, a_ in zip(td, np.abs(ta)):
         ax_main.add_patch(Rectangle((t-1.5, 0), 3, a_*1.3, fill=False,
                                      ls='--', lw=1, edgecolor='gray', alpha=0.6))
-    ax_main.set_xlabel('Delay (Samples)'); ax_main.set_ylabel('$|\\alpha|$')
+    ax_main.set_xlabel('Delay (ms)'); ax_main.set_ylabel('$|\\alpha|$')
     ax_main.legend(fontsize=8); ax_main.grid(alpha=0.3)
     ax_main.set_xlim([30, 220]); ax_main.set_ylim([0, 1.2])
 
@@ -506,11 +510,9 @@ def fig_09():
         ax_sub.stem(mdi-0.15, np.abs(mai), linefmt='k-', markerfmt='ks', basefmt=' ')
         ax_sub.stem(mdf+0.15, np.abs(maf), linefmt='b-', markerfmt='b^', basefmt=' ')
         ax_sub.set_xlim([t-2, t+2]); ax_sub.set_ylim([0, a_*1.3])
-        ax_sub.set_title(f'Path {i+1}: $\\tau\\approx{t:.1f}$', fontsize=9)
+        ax_sub.set_title(f'({chr(97+i)}) Path {i+1}: $\\tau\\approx{t:.1f}$', fontsize=9)
         ax_sub.grid(alpha=0.3); ax_sub.tick_params(labelsize=7)
 
-    fig.suptitle('Channel Impulse Response Estimation (with Zoomed Subplots)',
-                 fontsize=13)
     fig.savefig(os.path.join(RESULTS, 'fig_09_channel_stem.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
     print("  鉁?fig_09_channel_stem.png")
@@ -548,7 +550,7 @@ def fig_10():
     fig, ax = plt.subplots(figsize=(12, 4))
     ax.plot(np.abs(r_int), 'k-', lw=1, label=f'Integer SAGE ($E={e_int:.1f}$)')
     ax.plot(np.abs(r_frac), 'b-', lw=1.5, label=f'CD-SAGE ($E={e_frac:.1f}$)')
-    ax.set_xlabel('Time (Sample)'); ax.set_ylabel('$|$Residual$|$')
+    ax.set_xlabel('Time (ms)'); ax.set_ylabel('$|$Residual$|$')
     ax.set_title('Residual Error Comparison')
     ax.legend(fontsize=10); ax.grid(alpha=0.3); ax.set_xlim([30, 250])
     fig.tight_layout()
@@ -571,7 +573,8 @@ def fig_11():
     ]
     labels = [c[0] for c in configs]
     values = np.array([c[1] for c in configs])
-    colors = ['#777777', '#4472C4', '#5B9BD5', '#70AD47', '#ED7D31', '#C00000']
+    # Refined professional color scheme
+    colors = ['#7F7F7F', '#3182BD', '#6BAED6', '#74C476', '#E6550D', '#BD0026']
 
     fig, ax = plt.subplots(figsize=(9, 5))
     bars = ax.bar(range(len(values)), values, color=colors, edgecolor='white', lw=0.8, width=0.6)
@@ -586,20 +589,22 @@ def fig_11():
     ax.axhline(0.023, color='red', ls='--', lw=1.5, alpha=0.7)
     ax.text(len(values)-0.5, 0.023*2.0, 'CRB = 0.023', fontsize=9, color='red', fontstyle='italic', ha='right')
 
-    ax.annotate('Stage 1: parabolic\ninterpolation (9.2$\\times$)',
-                xy=(1, values[1]), xytext=(2.6, values[0]*0.35),
-                arrowprops=dict(arrowstyle='->', color='#4472C4', lw=1.5),
-                fontsize=8.5, color='#4472C4',
-                bbox=dict(boxstyle='round', fc='white', ec='#4472C4', alpha=0.8))
-    ax.annotate('Stage 2: local grid\nrefinement (14.3$\\times$ over Stage 1)',
-                xy=(4, values[4]), xytext=(3.2, values[4]*5),
-                arrowprops=dict(arrowstyle='->', color='#ED7D31', lw=1.5),
-                fontsize=8.5, color='#ED7D31',
-                bbox=dict(boxstyle='round', fc='white', ec='#ED7D31', alpha=0.8))
+    # Stage 1
+    ax.annotate('Stage 1 parabolic\ninterpolation (9.2\u00d7)',
+                xy=(1, values[1]), xytext=(1.0, values[0]*0.35),
+                arrowprops=dict(arrowstyle='->', color='#3182BD', lw=1.5),
+                fontsize=8.5, color='#3182BD',
+                bbox=dict(boxstyle='round', fc='white', ec='#3182BD', alpha=0.8))
+    # Stage 2
+    ax.annotate('Stage 2 local grid\nrefinement (14.3\u00d7)',
+                xy=(4, values[4]), xytext=(3.8, values[4]*5),
+                arrowprops=dict(arrowstyle='->', color='#E6550D', lw=1.5),
+                fontsize=8.5, color='#E6550D',
+                bbox=dict(boxstyle='round', fc='white', ec='#E6550D', alpha=0.8))
 
     ax.set_xticks(range(len(values))); ax.set_xticklabels(labels, fontsize=8.5)
-    ax.set_ylabel('Delay RMSE (samples)', fontsize=12)
-    ax.set_title('Ablation Study: Contribution of Each Component (0 dB SNR, 100 MC)')
+    ax.set_ylabel('Delay RMSE (ms)', fontsize=12)
+    # title omitted per paper style
     ax.set_yscale('log'); ax.set_ylim([0.004, 12]); ax.grid(axis='y', alpha=0.3)
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_11_ablation.png'), dpi=1200, bbox_inches='tight')
@@ -633,7 +638,7 @@ def fig_12():
     ax2.axhline(0, color='gray', ls='-', lw=0.8)
     ax2.set_ylim(bottom=min(0, min(imp)) - abs(max(imp))*0.1, top=max(imp)*1.15)
 
-    ax1.set_title('Grid Mismatch Sensitivity Sea Trial ($K=8$)')
+    ax1.set_title('Grid Mismatch Sensitivity — Sea Trial')
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_12_seatrial.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
