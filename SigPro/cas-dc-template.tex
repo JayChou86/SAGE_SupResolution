@@ -161,13 +161,11 @@
 
 % Here goes the abstract
 \begin{abstract}
-Accurate estimation of multipath channel parameters---delay, amplitude, and phase---is fundamental to underwater acoustic communications, radar, and localization. The Space-Alternating Generalized Expectation-Maximization (SAGE) algorithm is a standard tool for iterative multipath decomposition, yet its M-step is conventionally restricted to an integer sampling grid, incurring a structural grid-mismatch error that cannot be mitigated by increasing the number of EM iterations.
+Accurate multipath channel estimation is fundamental to underwater acoustic communications, radar, and localization. The Space-Alternating Generalized Expectation-Maximization (SAGE) algorithm is widely used for iterative multipath decomposition, yet its M-step is conventionally restricted to an integer sampling grid, incurring a structural grid-mismatch error that cannot be reduced by additional EM iterations.
 
-We propose a two-stage fractional delay refinement strategy that augments the SAGE M-step with (i) three-point parabolic interpolation for coarse sub-sample delay estimation at $\bigO(1)$ cost, followed by (ii) a local grid search at $0.005\ T_s$ resolution within a $\pm 0.5\ T_s$ window. The combined approach achieves continuous-valued delay estimation without constructing a fine-grid dictionary.
+We propose Continuous-Delay SAGE (CD-SAGE), a two-stage fractional delay refinement strategy that augments the SAGE M-step with three-point parabolic interpolation for coarse sub-sample delay estimation at $\bigO(1)$ cost, followed by local grid refinement on a narrow window. The combined approach achieves continuous-valued delay estimation without constructing a fine-grid dictionary.
 
-We provide a rigorous theoretical foundation for the parabolic estimator: Lemma~1 establishes a structural invariance that guarantees exact noiseless recovery under an idealized quadratic autocorrelation model, Theorem~1 derives the closed-form asymptotic variance and its $1/\mathrm{SNR}$ scaling, and Corollary~1 establishes that the variance-to-CRB ratio is SNR-independent. Experimental results confirm that the two-stage combination attains the CRB within a factor of 1.04--1.11 across the operating SNR range.
-
-Extensive Monte Carlo simulations (500 trials per SNR, 3-path channel, $-15$ to $+15$~dB) demonstrate that Continuous-Delay SAGE (CD-SAGE) reduces delay estimation error by two orders of magnitude compared to integer-grid SAGE, achieves the Cram\'{e}r-Rao bound within a factor of 1.04--1.11 across the operating SNR range, and outperforms dictionary-based methods regardless of grid resolution. Per-path analysis reveals that the method's advantages are twofold: continuous-valued estimation eliminates the grid-quantization floor that limits discrete-grid methods on isolated paths, while iterative interference cancellation via the E-step resolves closely-spaced paths that dictionary methods cannot separate. An ablation study confirms that the local grid refinement stage (Stage~2) is the dominant accuracy contributor. Validation on the Watermark benchmark (NOF1 Norway fjord, 800 MC trials per SNR) demonstrates that CD-SAGE achieves a 7.3$\times$ improvement over dictionary methods on real measured multipath channels, with near-CRB performance across all decimation factors. Coarse-to-fine acceleration yields a verified 4.5$\times$ speedup with negligible accuracy loss.
+We establish a rigorous theoretical foundation: Lemma~1 proves the $\delta$-invariance of the parabolic denominator under a quadratic autocorrelation model, guaranteeing exact noiseless recovery; Theorem~1 derives the closed-form asymptotic variance; and Corollary~1 proves that the variance-to-CRB ratio is independent of SNR. Monte Carlo simulations demonstrate that CD-SAGE reduces delay estimation error by two orders of magnitude compared to integer-grid SAGE and attains near-CRB performance. Per-path analysis reveals that continuous-delay estimation eliminates the quantization floor on isolated paths, while iterative E-step interference cancellation resolves closely-spaced paths inaccessible to dictionary methods. Validation on the Watermark benchmark confirms these advantages on real measured multipath channels.
 \end{abstract}
 
 % Use if graphical abstract is present
@@ -188,7 +186,7 @@ Extensive Monte Carlo simulations (500 trials per SNR, 3-path channel, $-15$ to 
 % Keywords
 % Each keyword is seperated by \sep
 \begin{keywords}
- SAGE algorithm \sep multipath channel estimation \sep CD-SAGE \sep fractional delay \sep parabolic interpolation \sep Cram\'{e}r-Rao bound \sep super-resolution \sep underwater acoustic communications
+ Underwater acoustic communications \sep Channel estimation \sep Grid mismatch \sep Dense multipath \sep SAGE algorithm \sep Cram\'er-Rao bound
 \end{keywords}
 
 \maketitle
@@ -222,15 +220,11 @@ Extensive Monte Carlo simulations (500 trials per SNR, 3-path channel, $-15$ to 
 \section{Introduction}
 \label{sec:intro}
 
-\subsection{Background}
-
 Accurate estimation of multipath channel parameters---specifically the propagation delay, complex amplitude, and phase of each resolvable path---is a foundational task in underwater acoustic (UWA) communications, radar sensing, and acoustic localization systems~\cite{stojanovic2009,eggen2001}. The estimated channel impulse response directly determines the performance of downstream processing blocks: equalizer design, symbol detection, and channel capacity computation all depend on the fidelity of the delay estimates.
 
 The Space-Alternating Generalized Expectation-Maximization (SAGE) algorithm, introduced by Fessler and Hero~\cite{fessler1994} and adapted to channel sounding by Fleury~\textit{et~al.}~\cite{fleury1999}, has become a standard tool for iterative multipath decomposition. Its key advantages---fast convergence through sequential path updating, inherent interference cancellation via the E-step, and avoidance of joint high-dimensional optimization---make it particularly well-suited for UWA channels where the number of propagation paths is modest (typically 3--15) but the delay spread is large.
 
-\subsection{The Grid Mismatch Problem}
-
-A well-known but under-analyzed limitation of conventional SAGE is that the M-step correlation maximization
+A well-known but under-analyzed limitation of conventional SAGE is that its M-step correlation maximization
 \begin{equation}
 \hb{\tau}_l = \argmax_{\tau} \abs{\inner{s(t-\tau)}{\hb{x}_l}}^2
 \label{eq:mstep}
@@ -245,9 +239,7 @@ is conventionally restricted to \textbf{integer values} of $\tau$. When the true
 \item \textbf{It becomes the dominant error source at moderate-to-high SNR.} For $\SNR \ge 0$~dB, the grid mismatch contribution ($\sim 3.2$~ms$^2$) exceeds the noise contribution by two orders of magnitude.
 \end{enumerate}
 
-\subsection{Prior Work and Their Limitations}
-
-Existing approaches to overcome grid mismatch fall into three categories, each with characteristic limitations.
+To address grid mismatch, existing approaches fall into three categories.
 
 \textbf{Dictionary refinement.} Constructing a dictionary of candidate delays at sub-sample spacing (e.g., $0.5\ T_s$, yielding 381~atoms for our parameter range) and applying matched filter (MF), orthogonal matching pursuit (OMP), or sparse Bayesian learning (SBL)~\cite{wipf2004} shifts the discretization error to a finer scale but does not eliminate it. The fundamental trade-off persists: halving the grid spacing doubles the dictionary size and quadruples the memory and computation for SBL's $\bigO(N_{\text{grid}}^2)$ operations. Our measurements (Table~\ref{tab:complexity}) confirm that MF achieves RMSE 0.187 at 0~dB---better than integer SAGE's 2.890 but still an order of magnitude above the CRB of 0.024.
 
@@ -255,9 +247,7 @@ Existing approaches to overcome grid mismatch fall into three categories, each w
 
 \textbf{Interpolation-based refinement.} Applying quadratic or sinc interpolation to the correlation peak in the M-step is computationally lightweight---$\bigO(1)$ per iteration. Moddemeijer~\cite{moddemeijer1991} established the statistical properties of extremum estimation from sampled correlators, and Svilainis~\textit{et~al.}~\cite{svilainis2013} derived closed-form bias error expressions for parabolic, cosine, and Gaussian interpolation. However, these general results leave three SAGE-specific questions unresolved: (i)~under what conditions is the parabolic interpolation exact for the SAGE M-step correlation? (ii)~what is the closed-form variance as a function of SNR and the fractional offset $\delta$? (iii)~how far is the estimator from the CRB? Without answers, interpolation-based SAGE refinement remains an ad-hoc heuristic whose reliability cannot be guaranteed.
 
-\subsection{Contributions}
-
-This paper establishes a rigorous foundation for fractional delay estimation within the SAGE framework through three interconnected contributions.
+To address these gaps, this paper establishes a rigorous foundation for fractional delay estimation within the SAGE framework through three interconnected contributions.
 
 \noindent\textbf{Theoretical Analysis.} We characterize the structural nature of the grid-mismatch error, which does not vanish with increasing SNR and cannot be eliminated through additional EM iterations. By decomposing the delay into integer and fractional components, we establish a complete theoretical framework for the parabolic interpolation estimator: from denominator invariance that explains the exact-recovery mechanism (Lemma~1, Section~\ref{sec:lemma1}), to a closed-form asymptotic variance that matches the CRB scaling law (Theorem~1, Section~\ref{sec:theory}), to an SNR-independent efficiency ratio (Corollary~1), elevating parabolic interpolation from an empirical heuristic to a theoretically justified estimator.
 
@@ -340,7 +330,7 @@ The proposed CD-SAGE replaces the integer-constrained M-step of conventional SAG
 \begin{figure*}
 \centering
 \includegraphics[width=.9\textwidth]{figs/Fig_1.pdf}
-\caption{Two-Stage CD-SAGE algorithm pipeline. Left: main SAGE loop (E-step, amplitude estimation, residual update). Right: core contribution---FFT correlation followed by Stage~1 parabolic interpolation and Stage~2 local grid refinement.}
+\caption{Two-Stage CD-SAGE algorithm pipeline.}
 \label{fig:flowchart}
 \end{figure*}
 
@@ -379,7 +369,7 @@ Under the quadratic autocorrelation model $R(\tau) \approx 1 - c\tau^2$ (valid f
 \begin{figure*}
 \centering
 \includegraphics[width=.9\textwidth]{figs/Fig_2.png}
-\caption{Parabolic interpolation geometry for three representative fractional delays $\delta$. Three correlation samples at integer grid points (red) are fitted with a parabola (blue); its vertex gives the continuous delay estimate. True $|R(\tau)|^{2}$ shown in gray.}
+\caption{Parabolic interpolation geometry for three fractional delays. Three correlation samples (red) are fitted with a parabola (blue); the vertex gives the continuous delay estimate.}
 \label{fig:parabolic}
 \end{figure*}
 
@@ -404,7 +394,7 @@ The $\pm 0.5\ T_s$ search radius is sufficient because the parabolic estimate is
 \begin{figure*}
 \centering
 \includegraphics[width=.9\textwidth]{figs/Fig_3.png}
-\caption{Stage~2 local grid refinement. (a)~Pass~1: coarse search with step $\Delta_1=0.05$ locates the approximate peak $\tau_c$. (b)~Pass~2: fine search with step $\Delta_2=0.005$ within $[\tau_c\pm0.06]$ yields the refined estimate $\tau^*$.}
+\caption{Stage~2 local grid refinement. (a) Coarse search. (b) Fine search around the coarse estimate.}
 \label{fig:localrefine}
 \end{figure*}
 
@@ -537,7 +527,7 @@ All $\delta$-dependent terms cancel exactly. The noisy case follows by continuit
 \begin{figure}
 \centering
 \includegraphics[width=.9\columnwidth]{figs/Fig_5.png}
-\caption{Empirical vs.\ theoretical variance of $\hat{\delta}$ vs.\ SNR ($\delta=0.25$). The log-log slope of $-1$ confirms the $1/\SNR$ scaling.}
+\caption{Empirical and theoretical variance of $\hat{\delta}$ vs.\ SNR ($\delta=0.25$).}
 \label{fig:variance}
 \end{figure}
 
@@ -569,7 +559,7 @@ For practical waveforms whose autocorrelation deviates from the pure quadratic m
 \begin{figure}
 \centering
 \includegraphics[width=.9\columnwidth]{figs/Fig_6.png}
-\caption{Deterministic bias $\hat{\delta}-\delta$ of Stage~1 parabolic interpolation, computed from the noiseless autocorrelation of the 511-point QPSK waveform.}
+\caption{Deterministic bias $\hat{\delta}-\delta$ of Stage~1, computed from the noiseless autocorrelation of the 511-point QPSK waveform.}
 \label{fig:bias}
 \end{figure}
 
@@ -631,7 +621,7 @@ We compare against five baseline methods: Integer SAGE~\cite{fleury1999}, Matche
 \begin{figure*}
 \centering
 \includegraphics[width=.9\textwidth]{figs/Fig_7.png}
-\caption{Delay, magnitude, and phase RMSE vs.\ SNR for all algorithms (500 MC trials, grid $=0.5$ samples).}
+\caption{Delay, magnitude, and phase RMSE vs.\ SNR for all algorithms (500 MC trials).}
 \label{fig:rmse}
 \end{figure*}
 
@@ -792,7 +782,7 @@ A single-trial channel estimation at $\SNR = 10$~dB visually confirms the per-pa
 \begin{figure}
 \centering
 \includegraphics[width=.9\columnwidth]{figs/Fig_11.png}
-\caption{Single-trial channel impulse response estimates at SNR $=10$~dB, showing the estimated delays and amplitudes for all six algorithms.}
+\caption{Single-trial channel estimates at SNR $=10$~dB for all six algorithms.}
 \label{fig:stem}
 \end{figure}
 
@@ -822,7 +812,7 @@ Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} isolate each component's co
 \begin{figure*}
 \centering
 \includegraphics[width=.9\textwidth]{figs/Fig_12.png}
-\caption{Ablation study: contribution of each algorithmic component to the overall delay RMSE improvement at 0~dB SNR.}
+\caption{Ablation study: contribution of each component to delay RMSE at 0~dB SNR.}
 \label{fig:ablation}
 \end{figure*}
 
@@ -939,7 +929,7 @@ where $s(t)$ is the 511-point QPSK waveform and $\tau_i / M$ is the true delay i
 \begin{figure*}
 \centering
 \includegraphics[width=.9\textwidth]{figs/Fig_13.png}
-\caption{Delay RMSE vs.\ SNR on the Watermark NOF1 benchmark for decimation factors $M=4$ and $M=8$ (800 MC trials per SNR point).}
+\caption{Delay RMSE vs.\ SNR on the Watermark NOF1 benchmark ($M=4$ and $M=8$, 800 MC trials per SNR).}
 \label{fig:watermark}
 \end{figure*}
 
@@ -986,19 +976,9 @@ $M$ & SNR (dB) & Int SAGE & \textbf{CD-SAGE} & MF & OMP & NOMP & SBL \\
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper presented a two-stage fractional delay refinement strategy for SAGE-based multipath channel estimation. Three contributions constitute the core findings:
+This paper presented Continuous-Delay SAGE (CD-SAGE), a two-stage fractional delay estimation strategy for SAGE-based multipath channel sounding. The method combines $\bigO(1)$ parabolic interpolation with local grid refinement to achieve continuous-valued delay estimation, supported by a rigorous theoretical framework (Lemma~1, Theorem~1, Corollary~1). Monte Carlo simulations and per-path analysis demonstrate that CD-SAGE eliminates the grid-quantization floor and resolves closely-spaced paths via iterative E-step interference cancellation, attaining near-CRB performance across the operating SNR range. Validation on the Watermark benchmark confirms these advantages on real measured multipath channels. The algorithm requires no dictionary and integrates directly into existing SAGE implementations.
 
-\begin{enumerate}
-\item \textbf{Theoretical Analysis:} We characterized the structural nature of the grid-mismatch error and established a complete theoretical framework for the parabolic interpolation estimator. Lemma~1 proved the $\delta$-invariance of the parabolic denominator under the idealized quadratic autocorrelation model, explaining the mechanism of near-exact recovery. Theorem~1 provided the closed-form asymptotic variance $\Var(\hat{\delta}) = (12\delta^2+1)/(16c^2 \cdot \SNR)$, establishing the $1/\SNR$ scaling that matches the CRB. Corollary~1 established the SNR-independent efficiency ratio, elevating parabolic interpolation from an empirical heuristic to a theoretically justified estimator.
-
-\item \textbf{CD-SAGE Algorithm:} The two-stage complementary strategy combines parabolic coarse localization with local grid refinement. Stage~1 compresses the search range from the full signal length to a narrow window at constant complexity, and Stage~2 eliminates the residual bias of the quadratic approximation with fine-step search. The algorithm requires no dictionary construction, integrates directly into existing SAGE implementations, and achieves a verified 4.5$\times$ speedup through hierarchical search acceleration without accuracy loss.
-
-\item \textbf{Systematic Validation:} We constructed a complete validation framework from synthetic simulations to real underwater acoustic channels. Monte Carlo simulations and per-path analysis revealed the distinct failure mechanisms of baseline methods, including grid quantization, path masking, and interference limitation. Ablation studies confirmed Stage~2 as the dominant accuracy contributor. Validation on the Watermark benchmark (NOF1 Norway fjord channel) established the robustness of CD-SAGE under real multipath conditions, demonstrating consistent near-CRB performance across all decimation factors.
-\end{enumerate}
-
-The practical implication is clear: \textbf{CD-SAGE eliminates the grid-quantization floor on real measured multipath channels while maintaining the computational efficiency of the SAGE framework}, making it a drop-in upgrade for any SAGE-based channel sounding system.
-
-\textbf{Limitations and future work.} The current Newton refinement implementation, after correcting a derivative sign error and applying Hann windowing, converges stably but plateaus at $\sim$0.37~ms RMSE due to integer-grid OMP initialization limitations for closely-spaced paths. Replacing the integer-grid OMP with a dictionary-based initialization would further improve NOMP accuracy. Extension to time-varying channels with Doppler estimation and integration with deep unfolding architectures represent natural next steps.
+\textbf{Limitations and future work.} Extension to time-varying channels with Doppler estimation and integration with deep unfolding architectures represent natural next steps.
 
 % ===========================================================================
 % APPENDIX

@@ -1,0 +1,38 @@
+本软件包提供了两个类文件，即 cas-sc.cls 和 cas-dc.cls，
+以及用于排版期刊文章的相应模板文件，
+这些文件适用于爱思唯尔（Elsevier）更新的工作流程。cas-sc.cls 适用于
+单栏排版，而 cas-dc.cls 则适用于双栏排版。目前，
+爱思唯尔的电子投稿系统及其他平台均已接受使用这些文件
+提交文章。
+
+有关类文件的错误和问题，可通过
+elsarticle@stmdocs.in 向类文件开发者报告。
+
+文件 manifest.txt 列出了
+elsarticle-cas 软件包中的文件列表。以下是主要文件：
+
+- cas-sc.cls，用于排版单栏文章的类文件
+- cas-dc.cls，用于排版双栏文章的类文件
+- cas-sc-template.tex，单栏期刊的模板文件
+- cas-dc-template.tex，双栏期刊的模板文件
+- cas-common.sty，用于格式设置的附加宏包
+- cas-model2-names.bst，BibTeX样式文件
+- cas-refs.bib，示例BibTeX数据库
+- cas-twitter.jpeg、cas-linkedin.jpeg、cas-url.jpeg、cas-gplus.jpeg、 
+  cas-facebook.jpeg、cas-email.jpeg - 社交 
+  网站的缩略图
+
+PDF 文档 elsdoc-cas.pdf 位于 doc 目录中。要
+生成该文档：
+
+ 1. pdflatex elsdoc-cas
+ 2. pdflatex elsdoc-cas
+ 3. pdflatex elsdoc-cas
+
+或者
+
+使用 makefile。在 doc
+目录中使用目标 `all'（例如：make all）。
+
+上述步骤将生成一个打印版本，即 elsdoc-cas.pdf。
+
