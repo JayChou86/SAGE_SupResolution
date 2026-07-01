@@ -24,7 +24,7 @@ from matplotlib.patches import Rectangle as MplRectangle
 plt.rcParams.update({
     'font.family': 'serif',
     'font.serif': ['Times New Roman', 'Times', 'DejaVu Serif'],
-    'font.size': 11,
+    'font.size': 15,
     'mathtext.fontset': 'stix',
     'figure.facecolor': 'white',
     'axes.facecolor': 'white',
@@ -34,7 +34,7 @@ plt.rcParams.update({
 def _add_sublabels(axes, ox=-0.08, oy=1.02):
     for i, ax in enumerate(axes):
         ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
-                fontsize=12, fontweight='bold', ha='left', va='bottom')
+                fontsize=16, fontweight='bold', ha='left', va='bottom')
 
 RESULTS = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
 os.makedirs(RESULTS, exist_ok=True)
@@ -219,13 +219,13 @@ def generate_parabolic():
         # Verify parabola opens downward
         direction = '鈫? if a < 0 else '
         ax.text(0.95, 0.05, f'$a={a:.3f}$ {direction}', transform=ax.transAxes,
-                fontsize=8, ha='right', color='#555')
+                fontsize=12, ha='right', color='#555')
 
-        ax.set_xlabel('Offset from $k_{\\rm opt}$ (ms)')
+        ax.set_xlabel('Offset from $k_{\\rm opt}$ ($T_s$)')
         ax.set_ylabel('$|C|^2$ (normalized)')
         ax.set_title(f'$\\delta = {delta:+.1f}$')
         ax.grid(True, alpha=0.3)
-        ax.legend(fontsize=8, loc='upper right')
+        ax.legend(fontsize=12, loc='upper right')
         ax.set_xlim([-1.5, 1.5])
 
     fig.tight_layout()
@@ -244,7 +244,7 @@ def generate_localrefine():
     tau_true = 60.43
     sigma = 0.15
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 4.5))
     _add_sublabels([ax1, ax2])
 
     # 鈹€鈹€ Left: Coarse 鈹€鈹€
@@ -264,10 +264,10 @@ def generate_localrefine():
     sh_lo = tau_coarse[idx_c] - 0.06
     sh_hi = tau_coarse[idx_c] + 0.06
     ax1.axvspan(sh_lo, sh_hi, alpha=0.15, color='orange', label='Fine zone')
-    ax1.set_xlabel('Delay (ms)')
+    ax1.set_xlabel('Delay ($T_s$)')
     ax1.set_ylabel('Objective $f(\\tau)$')
     ax1.set_title('Pass 1: Coarse Grid ($\\Delta_1 = 0.05$, ~20 evals)')
-    ax1.legend(fontsize=8, loc='upper right')
+    ax1.legend(fontsize=12, loc='upper right')
     ax1.grid(True, alpha=0.3)
 
     # 鈹€鈹€ Right: Fine 鈹€鈹€
@@ -285,15 +285,10 @@ def generate_localrefine():
     ax2.axvline(x=tau_est, color='darkred', linestyle=':', linewidth=2,
                 label=f'Final $\\hat{{\\tau}}={tau_est:.3f}$')
     ax2.plot(tau_est, f_fine[idx_f], 'r*', markersize=15, zorder=5)
-    ax2.annotate(f'Error = {abs(tau_est - tau_true):.4f} samples',
-                 xy=(tau_est, f_fine[idx_f]),
-                 xytext=(tau_est + 0.012, f_fine[idx_f] * 0.85),
-                 fontsize=9, color='darkred',
-                 arrowprops=dict(arrowstyle='->', color='darkred'))
-    ax2.set_xlabel('Delay (ms)')
+    ax2.set_xlabel('Delay ($T_s$)')
     ax2.set_ylabel('Objective $f(\\tau)$')
     ax2.set_title('Pass 2: Fine Grid ($\\Delta_2 = 0.005$, ~20 evals)')
-    ax2.legend(fontsize=8, loc='upper right')
+    ax2.legend(fontsize=12, loc='upper right')
     ax2.grid(True, alpha=0.3)
 
     fig.tight_layout()
@@ -372,8 +367,8 @@ def generate_bias_efficiency():
     ax.axvline(0, color='gray', ls=':', lw=0.8, alpha=0.5)
     ax.axvline(0.5, color='gray', ls=':', lw=0.8, alpha=0.5)
     ax.axvline(-0.5, color='gray', ls=':', lw=0.8, alpha=0.5)
-    ax.set_xlabel('Fractional offset $\\delta$ (ms)')
-    ax.set_ylabel('Bias $\\hat{\\delta} - \\delta$ (ms)')
+    ax.set_xlabel('Fractional offset $\\delta$')
+    ax.set_ylabel('Bias $\\hat{\\delta} - \\delta$ ($T_s$)')
     # title omitted per paper style
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
@@ -486,7 +481,7 @@ def generate_seatrial():
     for i, (r, v) in enumerate(zip(down_ratios, imp)):
         c = 'darkgreen' if v > 0 else 'darkred'
         offset = 3 if v >= 0 else -6
-        ax2.text(r, v + offset, f'{v:+.1f}%', ha='center', fontsize=9,
+        ax2.text(r, v + offset, f'{v:+.1f}%', ha='center', fontsize=13,
                  color=c)
 
     ax1.set_title('Grid Mismatch Sensitivity — Sea Trial', fontsize=13)

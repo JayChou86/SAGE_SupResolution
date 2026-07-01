@@ -23,7 +23,7 @@ from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Rectangle
 plt.rcParams.update({
     'font.family': 'serif',
     'font.serif': ['Times New Roman', 'Times', 'DejaVu Serif'],
-    'font.size': 11,
+    'font.size': 15,
     'mathtext.fontset': 'stix',
     'figure.facecolor': 'white', 'axes.facecolor': 'white',
 })
@@ -32,7 +32,7 @@ plt.rcParams.update({
 def _add_sublabels(axes, ox=-0.08, oy=1.02):
     for i, ax in enumerate(axes):
         ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
-                fontsize=12, fontweight='bold', ha='left', va='bottom')
+                fontsize=16, fontweight='bold', ha='left', va='bottom')
 
 RESULTS = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
 os.makedirs(RESULTS, exist_ok=True)
@@ -108,7 +108,7 @@ def fig_01():
     ax1.axvline(k_nearest, color='gray', ls=':', lw=1, alpha=0.5, label=f'Integer grid $k={k_nearest}$')
     ax1.set_xlabel('Delay (ms)'); ax1.set_ylabel('$|C(\\tau)|^2$')
     ax1.set_title('Grid Mismatch Mechanism')
-    ax1.legend(fontsize=9); ax1.grid(alpha=0.3); ax1.set_ylim([0, 1.15])
+    ax1.legend(fontsize=11); ax1.grid(alpha=0.3); ax1.set_ylim([0, 1.15])
 
     # 鈹€鈹€ (b) Conceptual RMSE 鈥?curve formulas from figs_1_4_bare.py 鈹€鈹€
     snr = np.array([-10, -5, 0, 5, 10, 15, 20, 25, 30])
@@ -122,7 +122,7 @@ def fig_01():
 
     ax2.set_xlabel('SNR (dB)'); ax2.set_ylabel('Delay RMSE (ms)')
     ax2.set_title('RMSE vs SNR $-$ Conceptual')
-    ax2.legend(fontsize=9); ax2.grid(alpha=0.3, which='both')
+    ax2.legend(fontsize=11); ax2.grid(alpha=0.3, which='both')
     ax2.set_xlim([-10, 30]); ax2.set_ylim([5e-3, 20])
 
     fig.tight_layout()
@@ -179,7 +179,7 @@ def fig_02():
     # Highlight
     rect = Rectangle((6.4, 3.8), 6.7, 7.0, fill=False, edgecolor='red', lw=2.5, ls='--')
     ax.add_patch(rect)
-    ax.text(9.75, 10.6, 'CORE\nCONTRIBUTION', ha='center', fontsize=9,
+    ax.text(9.75, 10.6, 'CORE\nCONTRIBUTION', ha='center', fontsize=13,
             color='red')
 
     # Loop indicator
@@ -194,7 +194,7 @@ def fig_02():
     arr(3.05, 3.2, 3.05, 2.5)
     # E-step -> FFT correlation (hidden data flow)
     arr(5.3, 8.4, 7.0, 10.4, c='#1565C0')
-    ax.text(6.15, 9.7, r'$\hat{\mathbf{x}}_l$', fontsize=8, color='#1565C0', ha='center')
+    ax.text(6.15, 9.7, r'$\hat{\mathbf{x}}_l$', fontsize=12, color='#1565C0', ha='center')
 
     # Core arrows
     arr(9.75, 10.0, 9.75, 9.0, c='#E65100')
@@ -203,7 +203,7 @@ def fig_02():
     # Loop arrows
     arr(9.75, 1.5, 6.5, 8.1, style='arc', c='#FF6F00')
     arr(3.05, 1.5, 3.05, 0.8, style='arc', c='#FF6F00')
-    ax.text(5.5, 10.5, 'next iter', fontsize=7, color='#FF6F00', style='italic')
+    ax.text(5.5, 10.5, 'next iter', fontsize=13, color='#FF6F00', style='italic')
 
     ax.set_title('', fontsize=14, pad=15)  # title omitted
     fig.tight_layout()
@@ -248,12 +248,12 @@ def fig_03():
         ax.axvline(d_hat, color='blue', ls=':', lw=2, label=f'$\\hat{{\\delta}}={d_hat:.3f}$')
         for xi, yi, lbl in zip(x_pts, y_pts, ['$y_{-1}$', '$y_0$', '$y_{+1}$']):
             ax.annotate(lbl, (xi, yi), textcoords='offset points', xytext=(0, 12),
-                       ha='center', fontsize=10, color='darkred')
+                       ha='center', fontsize=12, color='darkred')
         ax.set_xlabel('Offset from $k_{\\rm opt}$')
         ax.set_ylabel('$|R(\\tau)|^2$')
         ax.set_title(title)
         ax.grid(alpha=0.3); ax.set_xlim([-1.5, 1.5]); ax.set_ylim([-0.05, 1.1])
-        ax.legend(fontsize=8, loc='upper right')
+        ax.legend(fontsize=12, loc='upper right')
 
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_03_parabolic.png'), dpi=1200, bbox_inches='tight')
@@ -282,9 +282,9 @@ def fig_04():
     ax1.plot(tau_c[idx_c], f_c[idx_c], 'r*', ms=15, zorder=5)
     sh_l, sh_h = tau_c[idx_c]-0.06, tau_c[idx_c]+0.06
     ax1.axvspan(sh_l, sh_h, alpha=0.15, color='orange', label='Fine zone')
-    ax1.set_xlabel('Delay (ms)'); ax1.set_ylabel('$|C(\\tau)|^2$')
-    ax1.set_title('Pass 1: Coarse Search ($\\Delta=0.05$)')
-    ax1.legend(fontsize=8); ax1.grid(alpha=0.3)
+    ax1.set_xlabel('Delay ($T_s$)'); ax1.set_ylabel('$|C(\\tau)|^2$')
+    ax1.set_title('Pass 1: Coarse Search ($\\Delta=0.05\\,T_s$)')
+    ax1.legend(fontsize=10); ax1.grid(alpha=0.3)
 
     # (b) Fine
     tau_f = np.arange(sh_l, sh_h+0.001, 0.005)
@@ -294,9 +294,9 @@ def fig_04():
     idx_f = np.argmax(f_f)
     ax2.axvline(tau_f[idx_f], color='darkred', ls=':', lw=2, label=f'$\\tau^*={tau_f[idx_f]:.3f}$')
     ax2.plot(tau_f[idx_f], f_f[idx_f], 'r*', ms=15, zorder=5)
-    ax2.set_xlabel('Delay (ms)'); ax2.set_ylabel('$|C(\\tau)|^2$')
-    ax2.set_title('Pass 2: Fine Search ($\\Delta=0.005$)')
-    ax2.legend(fontsize=8); ax2.grid(alpha=0.3)
+    ax2.set_xlabel('Delay ($T_s$)'); ax2.set_ylabel('$|C(\\tau)|^2$')
+    ax2.set_title('Pass 2: Fine Search ($\\Delta=0.005\\,T_s$)')
+    ax2.legend(fontsize=10); ax2.grid(alpha=0.3)
 
     #fig.suptitle('Stage 2: Local Grid Refinement', fontsize=13)
     fig.tight_layout()
@@ -330,10 +330,10 @@ def fig_05():
     ax.axvline(-1, color='gray', ls=':', alpha=0.5)
     ax.axvline(0, color='gray', ls=':', alpha=0.5)
     ax.axvline(1, color='gray', ls=':', alpha=0.5)
-    ax.set_xlabel('Delay offset $\\tau$ (ms)')
+    ax.set_xlabel('Delay offset $\\tau$ ($T_s$)')
     ax.set_ylabel('$|R(\\tau)|$')
     # title omitted per paper style
-    ax.legend(fontsize=9); ax.grid(alpha=0.3); ax.set_xlim([-3, 3]); ax.set_ylim([-0.05, 1.05])
+    ax.legend(fontsize=11); ax.grid(alpha=0.3); ax.set_xlim([-3, 3]); ax.set_ylim([-0.05, 1.05])
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_05_autocorrelation.png'), dpi=1200, bbox_inches='tight')
     plt.close(fig)
@@ -368,9 +368,9 @@ def fig_06():
               label='CRB $=1/(2\\cdot\\mathrm{SNR}\\cdot\\|s\'\\|^2)$')
     ax.axhline(int_mse, color='gray', ls=':', lw=2, label=f'Integer MSE $=\\delta^2={int_mse:.4f}$')
     ax.set_xlabel('SNR (dB)')
-    ax.set_ylabel('Variance / MSE (ms$^2$)')
+    ax.set_ylabel('Variance / MSE ($T_s^2$)')
     # title omitted per paper style
-    ax.legend(fontsize=9); ax.grid(alpha=0.3, which='both')
+    ax.legend(fontsize=11); ax.grid(alpha=0.3, which='both')
     ax.set_ylim([5e-7, 2])
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_06_variance.png'), dpi=1200, bbox_inches='tight')
@@ -414,7 +414,7 @@ def fig_07():
     ax1.plot(deltas, bias*1000, 'b-', lw=1.5)
     ax1.axhline(0, color='gray', ls='--')
     ax1.set_xlabel('True fractional delay $\\delta$')
-    ax1.set_ylabel('Bias ($\\times 10^{-3}$ ms)')
+    ax1.set_ylabel('Bias ($\\times 10^{-3}\\,T_s$)')
     ax1.set_title('Deterministic Bias (quartic model)')
     ax1.grid(alpha=0.3)
 
@@ -423,7 +423,7 @@ def fig_07():
     ax2.axhline(1.0, color='gray', ls='--', lw=1)
     ax2.set_xlabel('SNR (dB)'); ax2.set_ylabel('$\\mathrm{Var}(\\hat{\\delta}) / \\mathrm{CRB}$')
     ax2.set_title('CRB Efficiency Ratio')
-    ax2.legend(fontsize=9); ax2.grid(alpha=0.3)
+    ax2.legend(fontsize=11); ax2.grid(alpha=0.3)
     ax2.set_ylim([0, 2])
 
     fig.tight_layout()
@@ -459,7 +459,7 @@ def fig_08():
         ax.set_title(title)
         ax.grid(alpha=0.3, which='both')
         if ylim: ax.set_ylim(ylim)
-        if title == 'Delay': ax.legend(fontsize=7, loc='lower left')
+        if title == 'Delay': ax.legend(fontsize=13, loc='lower left')
 
     fig.tight_layout()
     fig.savefig(os.path.join(RESULTS, 'fig_08_rmse_vs_snr.png'), dpi=1200, bbox_inches='tight')
@@ -500,7 +500,7 @@ def fig_09():
         ax_main.add_patch(Rectangle((t-1.5, 0), 3, a_*1.3, fill=False,
                                      ls='--', lw=1, edgecolor='gray', alpha=0.6))
     ax_main.set_xlabel('Delay (ms)'); ax_main.set_ylabel('$|\\alpha|$')
-    ax_main.legend(fontsize=8); ax_main.grid(alpha=0.3)
+    ax_main.legend(fontsize=10); ax_main.grid(alpha=0.3)
     ax_main.set_xlim([30, 220]); ax_main.set_ylim([0, 1.2])
 
     pos = [[0.63,0.58,0.34,0.35],[0.63,0.32,0.34,0.22],[0.63,0.06,0.34,0.22]]
@@ -510,7 +510,7 @@ def fig_09():
         ax_sub.stem(mdi-0.15, np.abs(mai), linefmt='k-', markerfmt='ks', basefmt=' ')
         ax_sub.stem(mdf+0.15, np.abs(maf), linefmt='b-', markerfmt='b^', basefmt=' ')
         ax_sub.set_xlim([t-2, t+2]); ax_sub.set_ylim([0, a_*1.3])
-        ax_sub.set_title(f'({chr(97+i)}) Path {i+1}: $\\tau\\approx{t:.1f}$', fontsize=9)
+        ax_sub.set_title(f'({chr(97+i)}) Path {i+1}: $\\tau\\approx{t:.1f}$', fontsize=11)
         ax_sub.grid(alpha=0.3); ax_sub.tick_params(labelsize=7)
 
     fig.savefig(os.path.join(RESULTS, 'fig_09_channel_stem.png'), dpi=1200, bbox_inches='tight')
@@ -580,29 +580,29 @@ def fig_11():
     bars = ax.bar(range(len(values)), values, color=colors, edgecolor='white', lw=0.8, width=0.6)
 
     for i, (bar, val) in enumerate(zip(bars, values)):
-        ax.text(i, val*1.25, f'{val:.3f}', ha='center', va='bottom', fontsize=9)
+        ax.text(i, val*1.25, f'{val:.3f}', ha='center', va='bottom', fontsize=11)
     for i in range(1, len(values)):
         impr = values[0]/values[i]
         ax.text(i, values[i]*0.5, f'{impr:.1f}$\\times$', ha='center', va='center',
-                fontsize=8, color='white')
+                fontsize=12, color='white')
 
     ax.axhline(0.023, color='red', ls='--', lw=1.5, alpha=0.7)
-    ax.text(len(values)-0.5, 0.023*2.0, 'CRB = 0.023', fontsize=9, color='red', fontstyle='italic', ha='right')
+    ax.text(len(values)-0.5, 0.023*2.0, 'CRB = 0.023', fontsize=13, color='red', fontstyle='italic', ha='right')
 
     # Stage 1
     ax.annotate('Stage 1 parabolic\ninterpolation (9.2\u00d7)',
                 xy=(1, values[1]), xytext=(1.0, values[0]*0.35),
                 arrowprops=dict(arrowstyle='->', color='#3182BD', lw=1.5),
-                fontsize=8.5, color='#3182BD',
+                fontsize=10.5, color='#3182BD',
                 bbox=dict(boxstyle='round', fc='white', ec='#3182BD', alpha=0.8))
     # Stage 2
     ax.annotate('Stage 2 local grid\nrefinement (14.3\u00d7)',
                 xy=(4, values[4]), xytext=(3.8, values[4]*5),
                 arrowprops=dict(arrowstyle='->', color='#E6550D', lw=1.5),
-                fontsize=8.5, color='#E6550D',
+                fontsize=10.5, color='#E6550D',
                 bbox=dict(boxstyle='round', fc='white', ec='#E6550D', alpha=0.8))
 
-    ax.set_xticks(range(len(values))); ax.set_xticklabels(labels, fontsize=8.5)
+    ax.set_xticks(range(len(values))); ax.set_xticklabels(labels, fontsize=10.5)
     ax.set_ylabel('Delay RMSE (ms)', fontsize=12)
     # title omitted per paper style
     ax.set_yscale('log'); ax.set_ylim([0.004, 12]); ax.grid(axis='y', alpha=0.3)
@@ -634,7 +634,7 @@ def fig_12():
     ax2.set_ylabel('Improvement (%)')
     for r, v, c in zip(m_vals, imp, colors_bar):
         off = 0.5 if v >= 0 else -2
-        ax2.text(r, v+off, f'{v:+.1f}%', ha='center', fontsize=8.5, color=c)
+        ax2.text(r, v+off, f'{v:+.1f}%', ha='center', fontsize=10.5, color=c)
     ax2.axhline(0, color='gray', ls='-', lw=0.8)
     ax2.set_ylim(bottom=min(0, min(imp)) - abs(max(imp))*0.1, top=max(imp)*1.15)
 

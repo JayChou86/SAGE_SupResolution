@@ -8,13 +8,13 @@ from sage.algorithms import algo_SAGE, algo_MF, algo_OMP, algo_NOMP, algo_SBL
 from sage.evaluation import match_paths
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times'],'font.size':11})
+plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times'],'font.size': 15})
 
 # Sub-panel label utility — adds (a),(b),(c) to top-left of axes
 def _add_sublabels(axes, ox=-0.08, oy=1.02):
     for i, ax in enumerate(axes):
         ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
-                fontsize=12, fontweight='bold', ha='left', va='bottom')
+                fontsize=16, fontweight='bold', ha='left', va='bottom')
 
 CH='NOF1'; MAT=f'D:/DataSet/Watermark/input/channels/{CH}/mat/{CH}_025.mat'
 d=sio.loadmat(MAT); h_all=d['h']; fs_tau=float(d['fs_tau'][0,0])
@@ -96,7 +96,7 @@ for mi,M in enumerate([4,8]):
                    linestyle=ls[a],lw=1.8,ms=7,label=an[a],markerfacecolor='none')
     ax.set_title(f'M={M} ($f_s$={fs_tau/M:.0f} Hz)',fontsize=12)
     ax.set_xlabel('SNR (dB)'); ax.set_ylabel('Delay RMSE (ms)')
-    ax.legend(fontsize=7,loc='best'); ax.grid(alpha=0.3,which='both')
+    ax.legend(fontsize=13,loc='best'); ax.grid(alpha=0.3,which='both')
 fig.tight_layout()
 fig.savefig(f'{OUT}/mc_NOF1_paper.png',dpi=200,bbox_inches='tight'); plt.close()
 print(f"\nSaved {OUT}/mc_NOF1_paper.png")

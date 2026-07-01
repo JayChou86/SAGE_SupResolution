@@ -293,31 +293,31 @@ fprintf('=======================================================================
 
 %% 10. 学术级对比绘图
 
-% 图1：残差信号对比 (揭示”路径分裂”现象的核心图)
-figure('Color', 'w', 'Position', [100 100 1200 400]);
-plot(abs(residual_int), 'k-', 'LineWidth', 1); hold on;
-plot(abs(residual_omp), 'm--', 'LineWidth', 1);
-plot(abs(residual_sbl), 'c-.', 'LineWidth', 1);
-plot(abs(residual_frac), 'b-', 'LineWidth', 1.5);
-plot(abs(residual_nomp), '-', 'Color', [0.85 0.33 0.1], 'LineWidth', 1.5);
-title('最终残差信号 (Residual Error) 对比', 'FontSize', 12);
-xlabel('时间 (采样点)', 'FontSize', 11); ylabel('残差绝对值', 'FontSize', 11);
-legend('整数 SAGE (基线)', 'OMP', 'SBL', '小数 SAGE (本文)', 'NOMP', 'Location', 'best');
-grid on; xlim([30, 250]);
+% % 图1：残差信号对比 (揭示”路径分裂”现象的核心图)
+% figure('Color', 'w', 'Position', [100 100 1200 400]);
+% plot(abs(residual_int), 'k-', 'LineWidth', 1); hold on;
+% plot(abs(residual_omp), 'm--', 'LineWidth', 1);
+% plot(abs(residual_sbl), 'c-.', 'LineWidth', 1);
+% plot(abs(residual_frac), 'b-', 'LineWidth', 1.5);
+% plot(abs(residual_nomp), '-', 'Color', [0.85 0.33 0.1], 'LineWidth', 1.5);
+% title('最终残差信号 (Residual Error) 对比', 'FontSize', 12);
+% xlabel('时间 (采样点)', 'FontSize', 11); ylabel('残差绝对值', 'FontSize', 11);
+% legend('整数 SAGE (基线)', 'OMP', 'SBL', '小数 SAGE (本文)', 'NOMP', 'Location', 'best');
+% grid on; xlim([30, 250]);
 
 % 图2：冲激响应提取大图
 fig = figure('Color', 'w', 'Position', [100 200 1300 650]); 
 pos_main = [0.1, 0.15, 0.85, 0.8]; 
-pos_sub1 = [0.23, 0.60, 0.25, 0.30]; % 放大子图1 
-pos_sub2 = [0.23, 0.20, 0.25, 0.30]; % 放大子图1 
-pos_sub3 = [0.55, 0.20, 0.25, 0.30]; % 放大子图2 
+pos_sub1 = [0.25, 0.60, 0.25, 0.30]; % 放大子图1 
+pos_sub2 = [0.25, 0.21, 0.25, 0.30]; % 放大子图1 
+pos_sub3 = [0.57, 0.21, 0.25, 0.30]; % 放大子图2 
 
 % 第1步：绘制主图
 ax_main = axes('Position', pos_main);
 hold(ax_main, 'on'); 
 draw_all_stems(ax_main, true_delays, true_amps, match_delays, match_amps);
-xlabel(ax_main, 'Delay (Sample)', 'FontSize', 11); ylabel(ax_main, 'Amptitude |\alpha|', 'FontSize', 11);
-legend(ax_main, 'True (Continuous)', 'Int SAGE', 'Frac SAGE', 'MF (Grid)', 'OMP (Grid)', 'SBL (Grid)', 'NOMP', ...
+xlabel(ax_main, 'Delay (T_s)', 'FontSize', 11); ylabel(ax_main, 'Amptitude |\alpha|', 'FontSize', 11);
+legend(ax_main, 'True (Continuous)', 'Int SAGE', 'CD-SAGE', 'MF (Grid)', 'OMP (Grid)', 'SBL (Grid)', 'NOMP', ...
     'Location', 'northeast', 'FontSize', 9, 'Box','off');
 grid(ax_main, 'on'); xlim(ax_main, [40, 220]); ylim(ax_main, [0, 1.2]);
 set(ax_main, 'FontName', 'Times New Roman', 'FontSize', 10);
@@ -348,84 +348,84 @@ xlim(ax_sub3, box_xlim3); ylim(ax_sub3, box_ylim3);
 % 保存图2（冲激响应）为论文用图
 saveas(fig, 'results/fig_09_channel_stem_mat.png');
 
-%% 11. RMSE 汇总对比图 (替换论文 fig_08)
-alg_names_plot = {'Int SAGE', 'Frac SAGE', 'MF', 'OMP', 'SBL', 'NOMP'};
-err_matrix = abs(match_delays - true_delays');           % L_paths × 6
-rmse_per_alg = sqrt(mean(err_matrix.^2, 1));            % 1 × 6, 综合三条路径的RMSE
-
-figure('Color', 'w', 'Position', [100 100 1100 550]);
-
-% --- 子图1: 各算法综合RMSE柱状图 ---
-subplot(1,2,1);
-colors_bar = {[0.3 0.3 0.3], [0 0.45 0.74], [0.47 0.67 0.19], [0.64 0.08 0.18], [0 0.75 0.75], [0.85 0.33 0.1]};
-b = bar(rmse_per_alg, 'FaceColor', 'flat', 'EdgeColor', 'w', 'LineWidth', 0.8);
-for k = 1:6, b.CData(k,:) = colors_bar{k}; end
-set(gca, 'XTickLabel', alg_names_plot, 'FontSize', 10, 'FontName', 'Times New Roman');
-xtickangle(25);
-ylabel('Delay RMSE (samples)', 'FontSize', 11);
-title(sprintf('Overall RMSE (3 paths, SNR~26 dB)'), 'FontWeight', 'bold', 'FontSize', 11);
-grid on; box on;
-
-% 标注: 柱顶 = RMSE值, 柱内 = 相对Int SAGE的提升百分比
-rmse_baseline = rmse_per_alg(1);  % Int SAGE作为基线
-for k = 1:6
-    % 柱顶标注RMSE绝对值
-    text(k, rmse_per_alg(k)*1.15, sprintf('%.3f', rmse_per_alg(k)), ...
-        'HorizontalAlignment', 'center', 'FontSize', 9, 'FontWeight', 'bold', ...
-        'Color', colors_bar{k});
-    % 柱内标注改善百分比 (相对Int SAGE)
-    impr_pct = (rmse_baseline - rmse_per_alg(k)) / rmse_baseline * 100;
-    if k == 1
-        label_str = '(baseline)';
-        txt_color = 'w';
-    elseif impr_pct > 0
-        label_str = sprintf('%.1f%%', impr_pct);
-        txt_color = 'w';
-    else
-        label_str = sprintf('%.1f%%', impr_pct);
-        txt_color = 'y';
-    end
-    text(k, rmse_per_alg(k)*0.45, label_str, ...
-        'HorizontalAlignment', 'center', 'FontSize', 8.5, 'FontWeight', 'bold', ...
-        'Color', txt_color);
-end
-% CRB参考线
-crb_avg = mean(std_CRB);
-hold on; yline(crb_avg, 'r--', 'CRB', 'LineWidth', 1.5);
-
-% --- 子图2: 逐径时延误差对比 ---
-subplot(1,2,2);
-alg_colors = lines(6);
-for alg = 1:6
-    semilogy(1:L_paths, err_matrix(:,alg)', 'o-', 'LineWidth', 1.8, 'MarkerSize', 9, ...
-        'Color', colors_bar{alg}, 'MarkerFaceColor', colors_bar{alg});
-    hold on;
-end
-% CRB per path
-semilogy(1:L_paths, std_CRB, 'r--', 'LineWidth', 2, 'Marker', 's', 'MarkerSize', 10);
-set(gca, 'XTick', 1:L_paths, 'XTickLabel', {'Path 1 (50.43)', 'Path 2 (60.66)', 'Path 3 (200.51)'}, ...
-    'FontSize', 9, 'FontName', 'Times New Roman');
-xtickangle(12);
-ylabel('Delay Error (samples)', 'FontSize', 11);
-legend([alg_names_plot, {'CRB'}], 'Location', 'northeastoutside', 'FontSize', 8);
-title('Per-Path Delay Estimation Error', 'FontWeight', 'bold', 'FontSize', 11);
-grid on; box on;
-
-saveas(gcf, 'results/fig_08_rmse_vs_snr_mat.png');
+% %% 11. RMSE 汇总对比图 (替换论文 fig_08)
+% alg_names_plot = {'Int SAGE', 'Frac SAGE', 'MF', 'OMP', 'SBL', 'NOMP'};
+% err_matrix = abs(match_delays - true_delays');           % L_paths × 6
+% rmse_per_alg = sqrt(mean(err_matrix.^2, 1));            % 1 × 6, 综合三条路径的RMSE
+% 
+% figure('Color', 'w', 'Position', [100 100 1100 550]);
+% 
+% % --- 子图1: 各算法综合RMSE柱状图 ---
+% subplot(1,2,1);
+% colors_bar = {[0.3 0.3 0.3], [0 0.45 0.74], [0.47 0.67 0.19], [0.64 0.08 0.18], [0 0.75 0.75], [0.85 0.33 0.1]};
+% b = bar(rmse_per_alg, 'FaceColor', 'flat', 'EdgeColor', 'w', 'LineWidth', 0.8);
+% for k = 1:6, b.CData(k,:) = colors_bar{k}; end
+% set(gca, 'XTickLabel', alg_names_plot, 'FontSize', 10, 'FontName', 'Times New Roman');
+% xtickangle(25);
+% ylabel('Delay RMSE (samples)', 'FontSize', 11);
+% title(sprintf('Overall RMSE (3 paths, SNR~26 dB)'), 'FontWeight', 'bold', 'FontSize', 11);
+% grid on; box on;
+% 
+% % 标注: 柱顶 = RMSE值, 柱内 = 相对Int SAGE的提升百分比
+% rmse_baseline = rmse_per_alg(1);  % Int SAGE作为基线
+% for k = 1:6
+%     % 柱顶标注RMSE绝对值
+%     text(k, rmse_per_alg(k)*1.15, sprintf('%.3f', rmse_per_alg(k)), ...
+%         'HorizontalAlignment', 'center', 'FontSize', 9, 'FontWeight', 'bold', ...
+%         'Color', colors_bar{k});
+%     % 柱内标注改善百分比 (相对Int SAGE)
+%     impr_pct = (rmse_baseline - rmse_per_alg(k)) / rmse_baseline * 100;
+%     if k == 1
+%         label_str = '(baseline)';
+%         txt_color = 'w';
+%     elseif impr_pct > 0
+%         label_str = sprintf('%.1f%%', impr_pct);
+%         txt_color = 'w';
+%     else
+%         label_str = sprintf('%.1f%%', impr_pct);
+%         txt_color = 'y';
+%     end
+%     text(k, rmse_per_alg(k)*0.45, label_str, ...
+%         'HorizontalAlignment', 'center', 'FontSize', 8.5, 'FontWeight', 'bold', ...
+%         'Color', txt_color);
+% end
+% % CRB参考线
+% crb_avg = mean(std_CRB);
+% hold on; yline(crb_avg, 'r--', 'CRB', 'LineWidth', 1.5);
+% 
+% % --- 子图2: 逐径时延误差对比 ---
+% subplot(1,2,2);
+% alg_colors = lines(6);
+% for alg = 1:6
+%     semilogy(1:L_paths, err_matrix(:,alg)', 'o-', 'LineWidth', 1.8, 'MarkerSize', 9, ...
+%         'Color', colors_bar{alg}, 'MarkerFaceColor', colors_bar{alg});
+%     hold on;
+% end
+% % CRB per path
+% semilogy(1:L_paths, std_CRB, 'r--', 'LineWidth', 2, 'Marker', 's', 'MarkerSize', 10);
+% set(gca, 'XTick', 1:L_paths, 'XTickLabel', {'Path 1 (50.43)', 'Path 2 (60.66)', 'Path 3 (200.51)'}, ...
+%     'FontSize', 9, 'FontName', 'Times New Roman');
+% xtickangle(12);
+% ylabel('Delay Error (samples)', 'FontSize', 11);
+% legend([alg_names_plot, {'CRB'}], 'Location', 'northeastoutside', 'FontSize', 8);
+% title('Per-Path Delay Estimation Error', 'FontWeight', 'bold', 'FontSize', 11);
+% grid on; box on;
+% 
+% saveas(gcf, 'results/fig_08_rmse_vs_snr_mat.png');
 
 fprintf('\n>>> 图片已保存至 results/ 目录\n');
 function draw_all_stems(ax, t_tau, t_amp, m_tau, m_amp)
     lw = 1.5;
-    % 为了视觉可辨识度，在X轴上施加微小偏移（仅用于绘图，不改变真实数据）
+    % Python fig_rmse_overall colors: #333333, #1f77b4, #2ca02c, #d62728, #ff7f0e, #17becf
     % 真实信道
     stem(ax, t_tau, abs(t_amp), 'r', 'LineWidth', 2, 'Marker', 'o');
     % 算法 1-6 (Int, Frac, MF, OMP, SBL, NOMP)
-    stem(ax, m_tau(:,1) - 0.15, abs(m_amp(:,1)), 'k', 'LineWidth', lw, 'Marker', 's');
-    stem(ax, m_tau(:,2)       , abs(m_amp(:,2)), 'b-', 'LineWidth', 2, 'Marker', '^');
-    stem(ax, m_tau(:,3) + 0.15, abs(m_amp(:,3)), 'g--', 'LineWidth', lw, 'Marker', '*');
-    stem(ax, m_tau(:,4) + 0.30, abs(m_amp(:,4)), 'm--', 'LineWidth', lw, 'Marker', 'd');
-    stem(ax, m_tau(:,5) - 0.30, abs(m_amp(:,5)), 'c-.', 'LineWidth', lw, 'Marker', 'x');
-    stem(ax, m_tau(:,6) + 0.45, abs(m_amp(:,6)), 'Color', [0.85 0.33 0.1], 'LineWidth', 1.8, 'Marker', 'p', 'MarkerSize', 8);
+    stem(ax, m_tau(:,1) - 0.15, abs(m_amp(:,1)), 'Color', [0.2 0.2 0.2], 'LineStyle', '-', 'LineWidth', lw, 'Marker', 's');
+    stem(ax, m_tau(:,2)       , abs(m_amp(:,2)), 'Color', [0.12 0.47 0.71], 'LineStyle', '-', 'LineWidth', 2, 'Marker', '^');
+    stem(ax, m_tau(:,3) + 0.15, abs(m_amp(:,3)), 'Color', [0.17 0.63 0.13], 'LineStyle', '--', 'LineWidth', lw, 'Marker', '*');
+    stem(ax, m_tau(:,4) + 0.30, abs(m_amp(:,4)), 'Color', [0.84 0.15 0.16], 'LineStyle', '--', 'LineWidth', lw, 'Marker', 'd');
+    stem(ax, m_tau(:,5) - 0.30, abs(m_amp(:,5)), 'Color', [1.0 0.44 0.06], 'LineStyle', '-.', 'LineWidth', lw, 'Marker', 'v');
+    stem(ax, m_tau(:,6) + 0.45, abs(m_amp(:,6)), 'Color', [0.09 0.75 0.81], 'LineStyle', '-', 'LineWidth', 1.8, 'Marker', 'x');
 end
 
 %% --- 辅助函数：严格基于 FFT 的分数延迟 ---

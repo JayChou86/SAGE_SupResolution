@@ -13,11 +13,18 @@ matplotlib.use('Agg')  # 非交互后端，适合脚本批量出图
 import matplotlib.pyplot as plt
 from typing import List, Optional
 
+# Sub-panel label utility — adds (a),(b),(c) to top-left of axes
+def _add_sublabels(axes, fmt='(%s)', fontsize=16, fontweight='bold',
+                   ox=-0.08, oy=1.02):
+    for i, ax in enumerate(axes):
+        ax.text(ox, oy, fmt % chr(ord('a')+i), transform=ax.transAxes,
+                fontsize=fontsize, fontweight=fontweight, ha='left', va='bottom')
+
 
 # 全局样式
 plt.rcParams.update({
     'font.family': 'serif',
-    'font.size': 11,
+    'font.size': 15,
     'mathtext.fontset': 'stix',
     'figure.facecolor': 'white',
     'axes.facecolor': 'white',
@@ -56,9 +63,10 @@ def plot_rmse_vs_snr(
     num_algos = len(algo_names)
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
+    _add_sublabels(axes)
 
     titles = [
-        ('Delay RMSE vs CRB', 'Delay RMSE (Samples)'),
+        ('Delay RMSE vs CRB', 'Delay RMSE (ms)'),
         ('Magnitude RMSE vs CRB', 'Magnitude RMSE'),
         ('Phase RMSE vs CRB', 'Phase RMSE (rad)'),
     ]
@@ -86,12 +94,10 @@ def plot_rmse_vs_snr(
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         ax.grid(True, alpha=0.3)
-        ax.legend(fontsize=8, loc='best')
+        ax.legend(fontsize=12, loc='best')
         if ax_idx == 0:
             ax.set_ylim([1e-3, 200])
 
-    fig.suptitle('Multi-path Parameter Estimation Performance (Monte Carlo)',
-                 fontsize=14, fontweight='bold')
     fig.tight_layout()
 
     if save_path:
@@ -122,9 +128,9 @@ def plot_channel_stem(
     # --- 主图 (占据左 60%) ---
     ax_main = fig.add_axes([0.06, 0.12, 0.52, 0.82])
     _draw_stems(ax_main, true_delays, true_amps, est_delays_list, est_amps_list, colors, markers, labels)
-    ax_main.set_xlabel('Delay (Sample)', fontsize=11)
+    ax_main.set_xlabel('Delay (ms)', fontsize=11)
     ax_main.set_ylabel(r'$|\alpha|$', fontsize=11)
-    ax_main.legend(fontsize=8, loc='upper right', ncol=2)
+    ax_main.legend(fontsize=12, loc='upper right', ncol=2)
     ax_main.grid(True, alpha=0.3)
     ax_main.set_xlim(xlim)
     ax_main.set_ylim([0, None])
@@ -151,12 +157,10 @@ def plot_channel_stem(
                     colors, markers, labels=None)
         ax_sub.set_xlim([td - 2, td + 2])
         ax_sub.set_ylim([0, np.abs(ta) * 1.3])
-        ax_sub.set_title(f'Path {i+1}: τ ≈ {td:.1f}', fontsize=9)
+        ax_sub.set_title(f'Path {i+1}: $\\tau \\approx$ {td:.1f}', fontsize=11)
         ax_sub.grid(True, alpha=0.3)
         ax_sub.tick_params(labelsize=7)
 
-    fig.suptitle('Channel Impulse Response Estimation (with Zoomed Subplots)',
-                 fontsize=13, fontweight='bold')
     if save_path:
         fig.savefig(save_path, dpi=150, bbox_inches='tight')
     return fig
@@ -202,10 +206,10 @@ def plot_residual_comparison(
             label=f'{label} (energy={energy:.1f})',
         )
 
-    ax.set_xlabel('Time (Sample)')
+    ax.set_xlabel('Time (ms)')
     ax.set_ylabel('|Residual|')
     ax.set_title('Residual Error Comparison')
-    ax.legend(fontsize=9, loc='best')
+    ax.legend(fontsize=13, loc='best')
     ax.grid(True, alpha=0.3)
     ax.set_xlim(xlim)
 
@@ -235,16 +239,16 @@ def plot_grid_mismatch(
                  label='Proposed SAGE (Fractional Grid)')
     ax1.set_xlabel('Decimation Factor')
     ax1.set_ylabel('Equalization MSE', fontweight='bold')
-    ax1.legend(loc='upper left', fontsize=9)
+    ax1.legend(loc='upper left', fontsize=11)
     ax1.grid(True, alpha=0.3)
 
     ax2 = ax1.twinx()
     bars = ax2.bar(down_ratios, improvement, width=0.2, color='gray',
                    alpha=0.4, edgecolor='none', label='Improvement (%)')
     ax2.set_ylabel('Performance Improvement (%)', fontweight='bold')
-    ax2.legend(loc='upper right', fontsize=9)
+    ax2.legend(loc='upper right', fontsize=11)
 
-    ax1.set_title('Impact of Sampling Grid Misalignment on Estimation Accuracy')
+    ax1.set_title('Impact of Sampling Grid Misalignment')
 
     fig.tight_layout()
     if save_path:

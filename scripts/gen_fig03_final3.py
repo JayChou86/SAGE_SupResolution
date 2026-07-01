@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times','DejaVu Serif'],'font.size':11,'mathtext.fontset':'stix',
+plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times','DejaVu Serif'],'font.size': 15,'mathtext.fontset':'stix',
                      'figure.facecolor':'white','axes.facecolor':'white'})
 R = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
 os.makedirs(R, exist_ok=True)
@@ -24,7 +24,7 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 4.8))
 # Sub-panel labels (a)(b)(c) on left
 for i, ax in enumerate(axes):
     ax.text(-0.08, 1.02, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
-            fontsize=12, fontweight='bold', ha='left', va='bottom')
+            fontsize=16, fontweight='bold', ha='left', va='bottom')
 
 for ax, sp, title in zip(axes, specs, titles):
     d = sp['d']
@@ -75,37 +75,36 @@ for ax, sp, title in zip(axes, specs, titles):
 
     for (xi, yi, lbl, (dx, dy)) in zip(xp, yp, ['$y_{-1}$', '$y_0$', '$y_{+1}$'], offsets):
         ax.annotate(lbl, (xi, yi), textcoords='offset points', xytext=(dx, dy),
-                   ha='center', fontsize=10, color='darkred')
+                   ha='center', fontsize=12, color='darkred')
 
-    # 鈹€鈹€ Annotate peaks (positions tuned per panel) 鈹€鈹€
+    # 鈹€鈹€ Annotate peaks (positions swapped: green→right, blue→left) 鈹€鈹€
     yt_peak = quartic(d)
     yf_peak = a_p*dh**2 + b_p*dh + c_p
-    # (a) d=0.00: move right; (b) d=0.25: move up-right; (c) d=0.43: move up-right
     if d == 0.00:
-        gx, gy = d - 0.40, yt_peak + 0.06
-        bx, by = dh + 0.18, yf_peak + 0.06
+        gx, gy = d + 0.18, yt_peak + 0.06
+        bx, by = dh - 0.68, yf_peak + 0.06
     elif d == 0.25:
-        gx, gy = d - 0.38, yt_peak + 0.10
-        bx, by = dh + 0.18, yf_peak + 0.06
+        gx, gy = d + 0.18, yt_peak + 0.10
+        bx, by = dh - 0.65, yf_peak + 0.06
     else:  # d == 0.43
-        gx, gy = d - 0.38, yt_peak + 0.10
-        bx, by = dh + 0.18, yf_peak + 0.06
+        gx, gy = d + 0.18, yt_peak + 0.10
+        bx, by = dh - 0.65, yf_peak + 0.06
 
     ax.annotate(f'$\\delta={d:.2f}$', xy=(d, yt_peak), xytext=(gx, gy),
-                fontsize=9, color='green',
+                fontsize=15, color='green',
                 arrowprops=dict(arrowstyle='->', color='green', lw=1.0))
     ax.annotate(f'$\\hat{{\\delta}}={dh:.3f}$', xy=(dh, yf_peak), xytext=(bx, by),
-                fontsize=9, color='blue',
+                fontsize=15, color='blue',
                 arrowprops=dict(arrowstyle='->', color='blue', lw=1.0))
 
-    ax.set_xlabel('Offset from $k_{\\rm opt}$ (ms)')
-    ax.set_title(title, fontsize=12)
+    ax.set_xlabel('Offset from $k_{\\rm opt}$ ($T_s$)', fontsize=15)
+    ax.set_title(title, fontsize=15)
     ax.grid(alpha=0.2)
     ax.set_xlim([-1.5, 1.5])
     ax.set_ylim([-0.05, 1.12])
     if ax == axes[0]:
         ax.set_ylabel('$|R(\\tau)|^2$')
-        ax.legend(fontsize=8.5, loc='upper right')
+        ax.legend(fontsize=10.5, loc='upper right')
 
 #fig.suptitle('Parabolic Interpolation 鈥?Three-Point Quadratic Fit (Stage 1)',
  #            fontsize=14)

@@ -454,19 +454,19 @@ The default Stage~2 evaluates $f(\tau) = |\inner{s(t-\tau)}{\hb{x}_l}|^2$ at 200
 
 \textbf{C. Newton Refinement (9 evals, $\sim$22$\times$ speedup, functional).} Newton iterations on $f(\tau)$~\cite{mamandipoor2016} refine the delay via $\tau_{k+1}=\tau_k - f'(\tau_k)/f''(\tau_k)$. With corrected frequency-domain gradient computation and Hann windowing to suppress FFT boundary artifacts, Newton refinement converges stably, achieving RMSE $\sim$0.37~ms at $\SNR\ge 0$~dB. The residual floor stems from integer-grid OMP initialization limitations on closely-spaced paths, not from Newton divergence.
 
-\begin{table}[width=.9\linewidth,cols=5,pos=h]
+\begin{table}[cols=4,pos=h]
 \centering
 \caption{Acceleration Strategies for Stage~2}
 \label{tab:accel}
 \footnotesize
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-Strategy & Evals & Speedup & RMSE$_0$ & Impl. \\
+Strategy & Evals & Speedup & RMSE$_0$ \\
 \midrule
-Full grid (default) & 200 & 1$\times$ & 0.024 (base) & Trivial \\
-\textbf{Coarse-to-Fine} & 40 & \textbf{4.5}$\times$ $\checkmark$ & 0.024 $\pm$ 10\% & Trivial \\
-Golden-Section & 15 & 13$\times$ (est.) & 0.024 (proj.) & Moderate \\
-Newton Refinement & 9 & 22$\times$ (est.) & 0.37 (floor) & Hann win. \\
+Full grid & 200 & 1$\times$ & 0.024 \\
+\textbf{Coarse-to-Fine} & 40 & \textbf{4.5}$\times$ $\checkmark$ & 0.024 \\
+Golden-Section & 15 & 13$\times$ (est.) & 0.024 \\
+Newton Refinement & 9 & 22$\times$ (est.) & 0.37 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -606,25 +606,25 @@ At $\SNR \ge 5$~dB, the first term dominates. Stage~2 reduces the effective CRB 
 
 Table~\ref{tab:params} summarizes the simulation parameters, chosen to match a representative shallow-water acoustic communication scenario.
 
-\begin{table}[width=.9\linewidth,cols=3,pos=h]
+\begin{table}[cols=3,pos=h]
 \centering
 \caption{Simulation Parameters}
 \label{tab:params}
 \footnotesize
-\begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{2.8cm}@{}}
+\begin{tabular}{@{}lll@{}}
 \toprule
 Parameter & Value & Rationale \\
 \midrule
 $N_s$ & 511 & Typical UWA training block \\
 $N_r$ & 1000 & $\sim$2$\times$ sequence length \\
 $L$ & 3 & Sparse UWA channel \\
-$\tau_l$ & [50.43, 60.66, 200.25] $T_s$ & Path 3: worst-case grid offset \\
+$\tau_l$ & [50.43, 60.66, 200.25] $T_s$ & Dense multipath and grid offset \\
 $\|\alpha_l\|$ & [1.0, 0.5, 0.8] & 0--6~dB dynamic range \\
-SNR range & $-15$ to $+15$~dB, 5~dB step & UWA operating range \\
+SNR range & $-15$ to $+15$~dB & UWA operating range \\
 MC trials & 500 & Statistical significance \\
 $I_{\max}$ & 15 & Converged by iter.~10 \\
-Dict.\ res.\ & 0.5 $T_s$ (381 atoms) & Grid sensitivity analysis \\
-Stage~2 $\Delta$ & 0.005 $T_s$ & 10$\times$ below CRB at 15~dB \\
+Dict.\ res.\ & 0.5 $T_s$ (381 atoms) & Grid sensitivity \\
+Stage~2 $\Delta$ & 0.005 $T_s$ & $10\times$ below CRB at 15~dB \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -642,21 +642,21 @@ We compare against five baseline methods: Integer SAGE~\cite{fleury1999}, Matche
 
 Fig.~\ref{fig:rmse} presents the three-panel RMSE comparison. Table~\ref{tab:ranking} ranks the algorithms at the representative 0~dB operating point.
 
-\begin{table}[width=.9\linewidth,cols=5,pos=h]
+\begin{table}[cols=3,pos=h]
 \centering
 \caption{Delay RMSE at 0~dB SNR (500 MC trials, grid=0.5)}
 \label{tab:ranking}
 \small
-\begin{tabular}{@{}clccc@{}}
+\begin{tabular}{@{}clcc@{}}
 \toprule
-Rank & Algorithm & RMSE & vs Int SAGE & vs CRB \\
+Rank & Algorithm & RMSE & vs CRB \\
 \midrule
-1 & \textbf{CD-SAGE} & \textbf{0.0251} & \textbf{99.1\%} $\downarrow$ & 1.05$\times$ \\
-2 & SBL (adaptive) & 0.177 & 93.9\% $\downarrow$ & 7.45$\times$ \\
-3 & OMP & 0.178 & 93.8\% $\downarrow$ & 7.48$\times$ \\
-4 & MF (381 atoms) & 0.187 & 93.5\% $\downarrow$ & 7.85$\times$ \\
-5 & NOMP (Hann-win.) & 0.414 & 85.7\% $\downarrow$ & 17.4$\times$ \\
-6 & Integer SAGE & 2.890 & --- & 122$\times$ \\
+1 & \textbf{CD-SAGE} & \textbf{0.0251} & 1.05$\times$ \\
+2 & SBL & 0.177 & 7.45$\times$ \\
+3 & OMP & 0.178 & 7.48$\times$ \\
+4 & MF & 0.187 & 7.85$\times$ \\
+5 & NOMP & 0.414 & 17.4$\times$ \\
+6 & Integer SAGE & 2.890 & 122$\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -674,20 +674,20 @@ Six key observations emerge:
 
 \subsection{CRB Attainment}
 
-\begin{table}[width=.9\linewidth,cols=5,pos=h]
+\begin{table}[cols=4,pos=h]
 \centering
 \caption{CD-SAGE Delay RMSE vs.\ CRB (500 MC, grid=0.5)}
 \label{tab:crb}
 \small
-\begin{tabular}{@{}ccccc@{}}
+\begin{tabular}{@{}cccc@{}}
 \toprule
-SNR (dB) & Frac RMSE & CRB & Ratio & Interpretation \\
+SNR (dB) & Frac RMSE & CRB & Ratio \\
 \midrule
-$-5$ & 0.0463 & 0.0423 & \textbf{1.09} & Within 9\% of CRB \\
-$0$  & 0.0251 & 0.0238 & \textbf{1.05} & Within 5\% of CRB \\
-$+5$ & 0.0140 & 0.0134 & \textbf{1.04} & Within 4\% of CRB \\
-$+10$& 0.0080 & 0.0075 & \textbf{1.06} & Within 6\% of CRB \\
-$+15$& 0.0047 & 0.0042 & \textbf{1.11} & Within 11\% of CRB \\
+$-5$ & 0.0463 & 0.0423 & 1.09 \\
+$0$  & 0.0251 & 0.0238 & 1.05 \\
+$+5$ & 0.0140 & 0.0134 & 1.04 \\
+$+10$& 0.0080 & 0.0075 & 1.06 \\
+$+15$& 0.0047 & 0.0042 & 1.11 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -698,23 +698,23 @@ Table~\ref{tab:crb} quantifies CRB attainment across 500 MC trials. The ratio of
 
 A key strength of CD-SAGE is its robustness to path-specific challenges. Table~\ref{tab:perpath} presents the per-path delay RMSE at 0~dB SNR, revealing the distinct difficulty profile of each path.
 
-\begin{table*}[width=.9\linewidth,cols=6,pos=h]
+\begin{table*}[cols=4,pos=h]
 \centering
 \caption{Per-Path Delay RMSE at 0~dB SNR (500 MC, grid=0.5)}
 \label{tab:perpath}
 \small
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}cccc@{}}
 \toprule
-Algorithm & Path 1 ($\tau{=}50.43$) & Path 2 ($\tau{=}60.66$) & Path 3 ($\tau{=}200.25$) & CRB \\
+Algorithm & Path 1 ($\tau{=}50.43$) & Path 2 ($\tau{=}60.66$) & Path 3 ($\tau{=}200.25$) \\
 \midrule
-Integer SAGE & 0.430 & 4.980 & 0.250 & --- \\
-\textbf{CD-SAGE} & \textbf{0.0167} & \textbf{0.0338} & \textbf{0.0216} & --- \\
-Matched Filter & 0.070 & 0.192 & 0.250 & --- \\
-OMP & 0.070 & 0.166 & 0.250 & --- \\
-NOMP (Hann-win.) & 0.701 & 0.146 & 0.034 & --- \\
-SBL & 0.070 & 0.163 & 0.250 & --- \\
+Integer SAGE & 0.430 & 4.980 & 0.250 \\
+\textbf{CD-SAGE} & \textbf{0.0167} & \textbf{0.0338} & \textbf{0.0216} \\
+Matched Filter & 0.070 & 0.192 & 0.250 \\
+OMP & 0.070 & 0.166 & 0.250 \\
+NOMP (Hann-win.) & 0.701 & 0.146 & 0.034 \\
+SBL & 0.070 & 0.163 & 0.250 \\
 \midrule
-CRB (per path) & 0.0168 & 0.0336 & 0.0210 & --- \\
+CRB (per path) & 0.0168 & 0.0336 & 0.0210 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -803,7 +803,7 @@ A single-trial channel estimation at $\SNR = 10$~dB visually confirms the per-pa
 
 \subsection{Ablation Study}
 
-\begin{table}[width=.9\linewidth,cols=4,pos=h]
+\begin{table}[cols=4,pos=h]
 \centering
 \caption{Contribution of Each Component (0~dB SNR, 100 MC trials)}
 \label{tab:ablation}
@@ -817,7 +817,7 @@ $+$ Parabolic interp.\ (Stage~1) & 0.344 & 9.2$\times$ & 9.2$\times$ \\
 $+$ 15 iterations (from 10) & 0.299 & 1.15$\times$ & 10.6$\times$ \\
 $+$ FFT correlation (speed) & 0.338 & 0.93$\times$ & 9.3$\times$ \\
 $+$ Local grid refine (Stage~2) & \textbf{0.024} & \textbf{14.3}$\times$ & \textbf{131}$\times$ \\
-\textbf{All combined (default)} & \textbf{0.022} & --- & \textbf{143}$\times$ \\
+\textbf{CD-SAGE (all combined)} & \textbf{0.022} & --- & \textbf{143}$\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -833,12 +833,12 @@ Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} isolate each component's co
 
 \subsection{Complexity Analysis}
 
-\begin{table}[width=.9\linewidth,cols=4,pos=h]
+\begin{table}[cols=4,pos=h]
 \centering
 \caption{Complexity and Measured Runtime (0~dB SNR, 30 trials)}
 \label{tab:complexity}
 \footnotesize
-\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{2.9cm}cc@{}}
+\begin{tabular}{@{}llcc@{}}
 \toprule
 Method & FLOPs & Time (ms) & vs Int \\
 \midrule
@@ -859,7 +859,7 @@ Table~\ref{tab:complexity} reports measured runtime alongside theoretical FLOPs 
 
 A natural question is whether a sufficiently fine dictionary can match CD-SAGE's performance---and, by extension, whether improving SAGE is necessary when dictionary-based alternatives exist. To answer this, we repeat the Monte Carlo experiment at a much finer grid resolution of 0.1~ms (1901 atoms), comparing the same five algorithms (SBL is excluded at this resolution because its Woodbury matrix $V \in \mathbb{C}^{1901\times 1901}$ requires $\mathcal{O}(1901^3)$ operations per EM iteration, making it computationally infeasible for practical use). Table~\ref{tab:grid_compare} presents the results.
 
-\begin{table}[width=.9\linewidth,cols=5,pos=h]
+\begin{table}[cols=5,pos=h]
 \centering
 \caption{Grid Resolution Sensitivity: Delay RMSE at \SI{0}{dB} SNR (200 MC trials)}
 \label{tab:grid_compare}
@@ -889,7 +889,7 @@ Three conclusions emerge from Table~\ref{tab:grid_compare}:
 
 A related question is whether CD-SAGE offers any benefit at low SNR, where thermal noise dominates. Table~\ref{tab:snr_regime} segments performance by SNR regime, showing that the advantage is SNR-dependent---and that this dependence is \textit{desirable}, not a weakness.
 
-\begin{table*}[width=.9\linewidth,cols=5,pos=h]
+\begin{table*}[cols=5,pos=h]
 \centering
 \caption{CD-SAGE Advantage by SNR Regime (grid$\,$=$\,$0.1, 200 MC)}
 \label{tab:snr_regime}
@@ -954,7 +954,7 @@ Fig.~\ref{fig:watermark} and Table~\ref{tab:wm} present the results. Three regim
 
 \textbf{High SNR ($0$ to $+15$~dB):} CD-SAGE continues tracking the CRB (RMSE $0.027 \to 0.005$ at $M=4$), while all other algorithms exhibit flat floors independent of SNR. The dictionary methods' RMSE of 0.17--0.20 matches the theoretical quantization floor $\Delta/\sqrt{12} \approx 0.144$ for a 0.5 ms grid, with the excess attributable to residual inter-path interference.
 
-\begin{table*}[width=.9\linewidth,cols=8,pos=h]
+\begin{table*}[cols=8,pos=h]
 \centering
 \caption{Delay RMSE at Representative SNR --- Watermark NOF1 (800 MC trials/SNR)}
 \label{tab:wm}

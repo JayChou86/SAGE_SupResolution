@@ -7,13 +7,13 @@ from sage.signal_utils import (generate_tx_signal, build_dictionary, fractional_
 from sage.algorithms import algo_SAGE, algo_MF, algo_OMP, algo_NOMP, algo_SBL
 from sage.evaluation import match_paths
 
-plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times'],'font.size':11,'mathtext.fontset':'stix'})
+plt.rcParams.update({'font.family':'serif','font.serif':['Times New Roman','Times'],'font.size': 15,'mathtext.fontset':'stix'})
 
 # Sub-panel label utility — adds (a),(b),(c) to top-left of axes
 def _add_sublabels(axes, ox=-0.08, oy=1.02):
     for i, ax in enumerate(axes):
         ax.text(ox, oy, '(%s)' % chr(ord('a')+i), transform=ax.transAxes,
-                fontsize=12, fontweight='bold', ha='left', va='bottom')
+                fontsize=16, fontweight='bold', ha='left', va='bottom')
 
 SNR_dB_vec=np.arange(-15,20,5); GRID_RES=0.5; NUM_MC=500; SEED=40
 rng=np.random.RandomState(SEED); np.random.seed(SEED)
@@ -96,7 +96,7 @@ for p in range(L):
             ax.semilogy(SNR_dB_vec,dat[:,alg],color=colors[alg],marker=markers[alg],linestyle=ls[alg],lw=1.8,ms=7,label=str(an[alg]),markerfacecolor='none')
         ax.semilogy(SNR_dB_vec,cb,'r-',lw=2.5,label='CRB',zorder=10)
         ax.set_xlabel('SNR (dB)'); ax.set_ylabel(ylabels[ax_idx]); ax.set_title(title)
-        ax.legend(fontsize=7,loc='best'); ax.grid(alpha=0.3,which='both'); ax.set_xlim([-17,17])
+        ax.legend(fontsize=13,loc='best'); ax.grid(alpha=0.3,which='both'); ax.set_xlim([-17,17])
     fig.tight_layout()
     fn=os.path.join(OUT,f'fig_rmse_path{p+1}.png')
     fig.savefig(fn,dpi=1200,bbox_inches='tight'); plt.close(fig)
@@ -111,7 +111,7 @@ for ax_idx,(ax,title,dat,cb) in enumerate(zip(axes,['Delay RMSE','Magnitude RMSE
         ax.semilogy(SNR_dB_vec,dat[:,alg],color=colors[alg],marker=markers[alg],linestyle=ls[alg],lw=1.8,ms=7,label=str(an[alg]),markerfacecolor='none')
     ax.semilogy(SNR_dB_vec,cb,'r-',lw=2.5,label='CRB',zorder=10)
     ax.set_xlabel('SNR (dB)'); ax.set_ylabel(ylabels[ax_idx]); ax.set_title(title)
-    ax.legend(fontsize=7,loc='best'); ax.grid(alpha=0.3,which='both'); ax.set_xlim([-17,17])
+    ax.legend(fontsize=13,loc='best'); ax.grid(alpha=0.3,which='both'); ax.set_xlim([-17,17])
 fig.tight_layout()
 fn=os.path.join(OUT,'fig_rmse_overall.png')
 fig.savefig(fn,dpi=1200,bbox_inches='tight'); plt.close()
