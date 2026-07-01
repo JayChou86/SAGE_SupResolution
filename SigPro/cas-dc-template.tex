@@ -164,7 +164,7 @@
 \begin{abstract}
 Accurate estimation of multipath channel parameters---delay, amplitude, and phase---is fundamental to underwater acoustic communications, radar, and localization. The Space-Alternating Generalized Expectation-Maximization (SAGE) algorithm is a standard tool for iterative multipath decomposition, yet its M-step is conventionally restricted to an integer sampling grid, incurring a structural grid-mismatch error that cannot be mitigated by increasing the number of EM iterations.
 
-We propose a two-stage fractional delay refinement strategy that augments the SAGE M-step with (i) three-point parabolic interpolation for coarse sub-sample delay estimation at $\bigO(1)$ cost, followed by (ii) a local grid search at 0.005 ms resolution within a $\pm 0.5$ ms window. The combined approach achieves continuous-valued delay estimation without constructing a fine-grid dictionary.
+We propose a two-stage fractional delay refinement strategy that augments the SAGE M-step with (i) three-point parabolic interpolation for coarse sub-sample delay estimation at $\bigO(1)$ cost, followed by (ii) a local grid search at 0.005,T_s resolution within a $\pm 0.5\,T_s$ window. The combined approach achieves continuous-valued delay estimation without constructing a fine-grid dictionary.
 
 We provide a rigorous theoretical foundation for the parabolic estimator: Lemma~1 establishes a structural invariance that guarantees exact noiseless recovery under an idealized quadratic autocorrelation model, Theorem~1 derives the closed-form asymptotic variance and its $1/\mathrm{SNR}$ scaling, and Corollary~1 establishes that the variance-to-CRB ratio is SNR-independent. Experimental results confirm that the two-stage combination attains the CRB within a factor of 1.04--1.11 across the operating SNR range.
 
@@ -260,11 +260,11 @@ Existing approaches to overcome grid mismatch fall into three categories, each w
 
 This paper establishes a rigorous foundation for fractional delay estimation within the SAGE framework through three interconnected contributions.
 
-\noindent\textbf{Two-Stage Fractional Delay Estimator.} We propose augmenting the SAGE M-step with (i)~three-point parabolic interpolation for coarse sub-sample delay estimation at $\bigO(1)$ cost, followed by (ii)~a local grid search at 0.005 ms resolution within a $\pm 0.5$ ms window (Section~\ref{sec:method}, Algorithm~1). The two stages are complementary: parabolic interpolation narrows the search region from the entire signal length to $\pm 0.5$ ms, and the fine grid search eliminates the residual bias from the quadratic approximation. The combined approach requires no dictionary construction and integrates seamlessly with existing SAGE implementations.
+\noindent\textbf{Theoretical Analysis.} We characterize the structural nature of the grid-mismatch error, which does not vanish with increasing SNR and cannot be eliminated through additional EM iterations. By decomposing the delay into integer and fractional components, we establish a complete theoretical framework for the parabolic interpolation estimator: from denominator invariance that explains the exact-recovery mechanism (Lemma~1, Section~\ref{sec:lemma1}), to a closed-form asymptotic variance that matches the CRB scaling law (Theorem~1, Section~\ref{sec:theory}), to an SNR-independent efficiency ratio (Corollary~1), elevating parabolic interpolation from an empirical heuristic to a theoretically justified estimator.
 
-\noindent\textbf{Theoretical Performance Guarantees.} We derive the closed-form bias-variance decomposition of the parabolic interpolation estimator (Section~\ref{sec:theory}). Lemma~1 establishes that the interpolation denominator is structurally invariant to the true fractional offset under the idealized quadratic autocorrelation model, guaranteeing exact recovery in the noiseless limit. Theorem~1 provides the asymptotic variance as a function of SNR and fractional offset, establishing the $1/\SNR$ scaling that matches the CRB. Corollary~1 establishes the SNR-independent efficiency ratio of the parabolic estimator. Experimental results confirm that the two-stage combination attains the Cram\'{e}r-Rao bound within 1.04--1.11$\times$ across the operating SNR range. These results transform parabolic interpolation from an ad-hoc heuristic into a theoretically justified estimator.
+\noindent\textbf{CD-SAGE Algorithm.} We propose a two-stage complementary strategy combining parabolic coarse localization with local grid refinement (Section~\ref{sec:method}, Algorithm~1). The first stage compresses the search range from the full signal length to a narrow window at constant complexity, and the second stage eliminates the residual bias of the quadratic approximation with fine-step search within the restricted window. The algorithm requires no dictionary construction, integrates directly into existing SAGE implementations, and achieves substantial computational savings through hierarchical search acceleration without accuracy loss (Section~\ref{sec:accelerate}).
 
-\noindent\textbf{Comprehensive Experimental Validation.} We conduct Monte Carlo simulations (500 trials, 3-path channel, $-15$ to $+15$~dB SNR) comparing six algorithms under a deliberately adversarial grid resolution, with per-path analysis revealing the distinct failure modes of each baseline method (Section~\ref{sec:results}). An ablation study isolates the contribution of each algorithmic component, and a complexity analysis quantifies the accuracy--computation trade-off. We further validate on real measured multipath channels from the Watermark benchmark (Section~\ref{sec:watermark}), establishing that CD-SAGE introduces zero performance degradation under real channel conditions while providing monotonic improvement as the sampling grid becomes coarser.
+\noindent\textbf{Systematic Validation.} We construct a complete validation framework spanning synthetic simulations to real underwater acoustic channels, encompassing large-sample Monte Carlo trials, per-path failure-mode analysis, component ablation studies, grid-sensitivity analysis, and SNR-regime characterization (Section~\ref{sec:results}). We systematically reveal the distinct failure mechanisms of baseline methods, including grid quantization, path masking, and interference limitation, and validate the robustness of CD-SAGE under real multipath conditions on a measured channel benchmark (Section~\ref{sec:watermark}), establishing its performance boundaries and application scope.
 
 % ===========================================================================
 % SECTION 2: SYSTEM MODEL AND SAGE PRELIMINARIES
@@ -348,10 +348,10 @@ The proposed CD-SAGE replaces the integer-constrained M-step of conventional SAG
 \begin{itemize}
 \item \textbf{Stage~1 (Parabolic interpolation, $\bigO(1)$):} After computing the correlation magnitude $|C(\tau)|^2$ on the integer grid via FFT, identify the integer peak $k_{\text{opt}}$, fit a parabola through three adjacent correlation samples, and extract the fractional offset $\hat{\delta}^{(1)}$ via a closed-form vertex formula. This yields a coarse continuous estimate $\hat{\tau}^{(1)}_l = k_{\text{opt}} + \hat{\delta}^{(1)}$.
 
-\item \textbf{Stage~2 (Local grid refinement, $\bigO(1/\Delta)$):} Search a fine grid of spacing $\Delta = 0.005$~ms within $[\hat{\tau}^{(1)}_l \pm 0.5]$, evaluating $|\inner{s(t-\tau)}{\hb{x}_l}|^2$ at each candidate via~\eqref{eq:fracshift} and selecting the maximizer. This corrects the residual error from the quadratic approximation underlying Stage~1.
+\item \textbf{Stage~2 (Local grid refinement, $\bigO(1/\Delta)$):} Search a fine grid of spacing $\Delta = 0.005$~ms within $[\hat{\tau}^{(1)}_l \pm 0.5,T_s]$, evaluating $|\inner{s(t-\tau)}{\hb{x}_l}|^2$ at each candidate via~\eqref{eq:fracshift} and selecting the maximizer. This corrects the residual error from the quadratic approximation underlying Stage~1.
 \end{itemize}
 
-The two stages are complementary: Stage~1 provides a computationally trivial coarse estimate whose deterministic bias (quantified in Fig.~\ref{fig:bias}) reaches approximately $-0.29$~ms at $|\delta|\approx0.4$ and vanishes at $\delta=0,\pm0.5$; Stage~2 eliminates this residual at the cost of $\sim$200 correlation evaluations (reducible to $\sim$40 via coarse-to-fine acceleration, Section~\ref{sec:accelerate}).
+The two stages are complementary: Stage~1 provides a computationally trivial coarse estimate whose deterministic bias (quantified in Fig.~\ref{fig:bias}) reaches approximately $-0.29,T_s at $|\delta|\approx0.4$ and vanishes at $\delta=0,\pm0.5$; Stage~2 eliminates this residual at the cost of $\sim$200 correlation evaluations (reducible to $\sim$40 via coarse-to-fine acceleration, Section~\ref{sec:accelerate}).
 
 \subsection{Stage~1---Parabolic Interpolation}
 
@@ -375,7 +375,7 @@ The first-stage delay estimate is then:
 \end{equation}
 where the constraint is enforced by clipping: if $|y_{-1} - 2y_0 + y_{+1}| < 10^{-10}$ or if $|\hat{\delta}^{(1)}| > 0.5$, we set $\hat{\delta}^{(1)} = 0$.
 
-\textbf{Why it works.} Under the quadratic autocorrelation model $R(\tau) \approx 1 - c\tau^2$ (valid for $|\tau| \ll 1$, verified in Fig.~\ref{fig:autocorr}), the denominator $y_{-1} - 2y_0 + y_{+1} = -2c|\alpha|$ is \textbf{independent of $\delta$}---a structural invariance proved in Lemma~1 (Section~\ref{sec:lemma1}). The numerator $y_{-1} - y_{+1} = -4c|\alpha|\delta$ is linear in $\delta$, the denominator is constant, and their ratio yields $\delta$ exactly. Fig.~\ref{fig:parabolic} illustrates the interpolation geometry for three representative $\delta$ values.
+Under the quadratic autocorrelation model $R(\tau) \approx 1 - c\tau^2$ (valid for $|\tau| \ll 1$, verified in Fig.~\ref{fig:autocorr}), the denominator $y_{-1} - 2y_0 + y_{+1} = -2c|\alpha|$ is \textbf{independent of $\delta$}, a structural invariance proved in Lemma~1 (Section~\ref{sec:lemma1}). The numerator $y_{-1} - y_{+1} = -4c|\alpha|\delta$ is linear in $\delta$, the denominator is constant, and their ratio yields $\delta$ exactly. Fig.~\ref{fig:parabolic} illustrates the interpolation geometry for three representative $\delta$ values.
 
 \begin{figure*}
 \centering
@@ -384,11 +384,11 @@ where the constraint is enforced by clipping: if $|y_{-1} - 2y_0 + y_{+1}| < 10^
 \label{fig:parabolic}
 \end{figure*}
 
-\textbf{Computational cost.} Stage~1 requires zero additional FFTs beyond the integer-grid correlation already computed in the M-step. The three-point extraction and vertex formula constitute $\bigO(1)$ floating-point operations.
+Stage~1 requires zero additional FFTs beyond the integer-grid correlation already computed in the M-step. The three-point extraction and vertex formula constitute $\bigO(1)$ floating-point operations.
 
 \subsection{Stage~2---Local Grid Refinement}
 
-While the parabolic estimator is exact under a pure quadratic autocorrelation, the true signal autocorrelation contains higher-order terms that introduce a deterministic bias (quantified in Fig.~\ref{fig:bias}), reaching approximately $-0.29$~ms at $|\delta|\approx0.4$ for the 511-point QPSK waveform. Stage~2 eliminates this residual by an exhaustive search on a fine local grid:
+While the parabolic estimator is exact under a pure quadratic autocorrelation, the true signal autocorrelation contains higher-order terms that introduce a deterministic bias (quantified in Fig.~\ref{fig:bias}), reaching approximately $-0.29,T_s at $|\delta|\approx0.4$ for the 511-point QPSK waveform. Stage~2 eliminates this residual by an exhaustive search on a fine local grid:
 \begin{equation}
 \hat{\tau}_l^{(2)} = \argmax_{\tau \in \mathcal{T}} \abs{\inner{s(t-\tau)}{\hb{x}_l^{(i)}}}^2
 \label{eq:stage2}
@@ -398,9 +398,9 @@ where the candidate set is:
 \mathcal{T} = \left\{ \hat{\tau}_l^{(1)} - 0.5 + m \cdot \Delta \;\middle|\; m = 0, 1, \ldots, \left\lfloor 1/\Delta \right\rfloor \right\}
 \label{eq:candidates}
 \end{equation}
-with default step $\Delta = 0.005$ ms, yielding $|\mathcal{T}| \approx 200$ candidates. The amplitude is recomputed via~\eqref{eq:amp} at the refined delay $\hat{\tau}_l^{(2)}$.
+with default step $\Delta = 0.005\,T_s$, yielding $|\mathcal{T}| \approx 200$ candidates.
 
-\textbf{Design rationale.} The $\pm 0.5$ search radius is sufficient because the parabolic estimate is guaranteed to lie within $\pm 0.5$ of the true peak. The step size $\Delta = 0.005$ is chosen such that the quantization error $\Delta/2 = 0.0025$ ms is at least an order of magnitude below the CRB at 15~dB SNR ($\sqrt{\CRB} \approx 0.004$), ensuring the grid search does not become the limiting factor. Fig.~\ref{fig:localrefine} illustrates the coarse-to-fine search process.
+The $\pm 0.5\,T_s$ search radius is sufficient because the parabolic estimate is guaranteed to lie within $\pm 0.5\,T_s$ of the true peak. The step size $\Delta = 0.005\,T_s$ is chosen such that the quantization error $\Delta/2 = 0.0025\,T_s$ is at least an order of magnitude below the CRB at 15~dB SNR ($\sqrt{\CRB} \approx 0.004\,T_s$), ensuring the grid search does not become the limiting factor. Fig.~\ref{fig:localrefine} illustrates the coarse-to-fine search process.
 
 \begin{figure*}
 \centering
@@ -413,7 +413,7 @@ with default step $\Delta = 0.005$ ms, yielding $|\mathcal{T}| \approx 200$ cand
 
 Algorithm~\ref{alg:sage} presents the complete two-stage CD-SAGE. Key implementation details:
 
-\textbf{First-iteration strategy.} In the first SAGE iteration ($i = 1$), we perform a full-range search over all $N_r - N_s + 1$ integer delays. In subsequent iterations ($i \ge 2$), the integer search is restricted to a $\pm 10$ ms window around the previous estimate---a standard heuristic~\cite{fleury1999} that leverages the fact that EM updates refine rather than relocate path estimates.
+\textbf{First-iteration strategy.} In the first SAGE iteration ($i = 1$), we perform a full-range search over all $N_r - N_s + 1$ integer delays. In subsequent iterations ($i \ge 2$), the integer search is restricted to a $\pm 10$ ms window around the previous estimate, a standard heuristic~\cite{fleury1999} that leverages the fact that EM updates refine rather than relocate path estimates.
 
 \textbf{Path sorting and collision detection.} After the first iteration, paths are sorted by descending $|\hb{\alpha}_l|$. For any pair of paths with $|\hb{\tau}_i - \hb{\tau}_j| < 2.0$ samples, the weaker path is perturbed by 3.0 samples---preventing two SAGE paths from converging to the same physical path.
 
@@ -450,7 +450,7 @@ The default Stage~2 evaluates $f(\tau) = |\inner{s(t-\tau)}{\hb{x}_l}|^2$ at 200
 
 \textbf{A. Coarse-to-Fine Search (4.5$\times$ speedup, verified).} A two-pass hierarchical search reduces evaluations from 200 to 40. Pass~1 evaluates $f(\tau)$ on a coarse grid with step $\Delta_1 = 0.05$ (20 evaluations) to locate $\tau_c$. Pass~2 evaluates $f(\tau)$ on the fine grid with step $\Delta_2 = 0.005$ within $[\tau_c \pm 0.05]$ (20 evaluations). The quantization error is identical to the full search. Experimental validation across $\SNR = -5$ to $+15$~dB (50 trials each) confirms a consistent \textbf{4.5$\times$ speedup} (\SI{545}{ms} $\to$ \SI{122}{ms} per trial) with RMSE deviation under $\pm 10\%$.
 
-\textbf{B. Golden-Section Search (13$\times$ speedup, estimated).} Golden-section search~\cite{kiefer1953} converges to the maximum of a unimodal function in approximately 15 evaluations. Since $f(\tau)$ is provably unimodal on $[\hat{\tau}^{(1)} \pm 0.5]$ at $\SNR \ge 5$~dB, this strategy is theoretically sound.
+\textbf{B. Golden-Section Search (13$\times$ speedup, estimated).} Golden-section search~\cite{kiefer1953} converges to the maximum of a unimodal function in approximately 15 evaluations. Since $f(\tau)$ is provably unimodal on $[\hat{\tau}^{(1)} \pm 0.5,T_s]$ at $\SNR \ge 5$~dB, this strategy is theoretically sound.
 
 \textbf{C. Newton Refinement (9 evals, $\sim$22$\times$ speedup, functional).} Newton iterations on $f(\tau)$~\cite{mamandipoor2016} refine the delay via $\tau_{k+1}=\tau_k - f'(\tau_k)/f''(\tau_k)$. With corrected frequency-domain gradient computation and Hann windowing to suppress FFT boundary artifacts, Newton refinement converges stably, achieving RMSE $\sim$0.37~ms at $\SNR\ge 0$~dB. The residual floor stems from integer-grid OMP initialization limitations on closely-spaced paths, not from Newton divergence.
 
@@ -479,7 +479,7 @@ For all experiments in this paper, we use the coarse-to-fine strategy (40 evalua
 \section{Theoretical Performance Analysis}
 \label{sec:theory}
 
-In this section, we derive the bias-variance decomposition of the parabolic interpolation estimator $\hat{\delta}$ and establish its relationship to the CRB. The three results---Lemma~1 (denominator invariance), Theorem~1 (asymptotic variance), and Corollary~1 (CRB efficiency)---provide the mathematical justification for why the computationally trivial three-point parabolic interpolation can achieve near-optimal accuracy.
+In this section, we derive the bias-variance decomposition of the parabolic interpolation estimator $\hat{\delta}$ and establish its relationship to the CRB. The three results: Lemma~1 (denominator invariance), Theorem~1 (asymptotic variance), and Corollary~1 (CRB efficiency)---provide the mathematical justification for why the computationally trivial three-point parabolic interpolation can achieve near-optimal accuracy.
 
 To establish the theoretical properties of the parabolic estimator, we first introduce the signal model and notation. Let $R(\tau) = \inner{s(t)}{s(t-\tau)}$ denote the autocorrelation function of the transmitted waveform. For a well-designed pseudo-random sequence with approximately flat spectrum, $R(\tau)$ is well-approximated by a quadratic function near the origin:
 \begin{equation}
@@ -529,9 +529,7 @@ y_{-1}^0 - 2y_0^0 + y_{+1}^0 &= |\alpha| \cdot [(-c - 2c\delta - c\delta^2) + (2
 &\quad + (-c + 2c\delta - c\delta^2)] \nonumber\\
 &= |\alpha| \cdot [-2c] = -2c|\alpha| \nonumber
 \end{align}
-All $\delta$-dependent terms cancel exactly. The noisy case follows by continuity. $\hfill\square$
-
-\textbf{Significance.} This structural property is the mathematical foundation for why the parabolic estimator achieves near-exact recovery. The $\delta$-invariance ensures that noise in $D$ does not couple multiplicatively with $\delta$ in the estimator $\hat{\delta} = N/(2D)$, preventing catastrophic error amplification at specific $\delta$ values.
+All $\delta$-dependent terms cancel exactly. The noisy case follows by continuity. This structural property is the mathematical foundation for why the parabolic estimator achieves near-exact recovery. The $\delta$-invariance ensures that noise in $D$ does not couple multiplicatively with $\delta$ in the estimator $\hat{\delta} = N/(2D)$, preventing catastrophic error amplification at specific $\delta$ values.
 
 \textbf{Remark (Model limitations).} The $\delta$-invariance is exact under the idealized quadratic autocorrelation model $R(\tau)=1-c\tau^2$. For practical waveforms such as the 511-point QPSK sequence used in this paper, the autocorrelation contains higher-order (quartic and beyond) terms that introduce weak $\delta$-dependence in the denominator. This residual dependence manifests as the deterministic bias quantified in Fig.~\ref{fig:bias} and is corrected by the Stage~2 local grid refinement. Lemma~1 should therefore be understood as a conceptual insight---explaining \emph{why} the three-point parabolic estimator can achieve near-exact recovery---rather than a claim of exactness for all waveforms.
 
@@ -565,7 +563,7 @@ Using the diagonal noise covariance approximation $\bm{\Sigma}_\varepsilon = (N_
 &= \frac{24\delta^2 + 2}{16c^2|\alpha|^2} \cdot \frac{N_0}{2}
    = \frac{12\delta^2 + 1}{16c^2 \cdot \SNR} \nonumber
 \end{align}
-For practical waveforms whose autocorrelation deviates from the pure quadratic model, the curvature parameter $c$ in~\eqref{eq:thm1} should be interpreted as the \emph{effective} curvature $c_{\text{eff}}$ calibrated from the actual autocorrelation at the three sampling points; the experimental results in Section~\ref{sec:results} confirm that the $1/\SNR$ scaling is preserved. $\hfill\square$
+For practical waveforms whose autocorrelation deviates from the pure quadratic model, the curvature parameter $c$ in~\eqref{eq:thm1} should be interpreted as the \emph{effective} curvature $c_{\text{eff}}$ calibrated from the actual autocorrelation at the three sampling points; the experimental results in Section~\ref{sec:results} confirm that the $1/\SNR$ scaling is preserved.
 
 \subsection{Corollary~1---CRB Efficiency}
 
@@ -583,9 +581,7 @@ For practical waveforms whose autocorrelation deviates from the pure quadratic m
 \end{equation}
 where $\norm{s'}^2 = \sum_t |s'(t)|^2$ is the energy of the signal derivative, and $\CRB = 1/(2 \cdot \SNR \cdot \norm{s'}^2)$~\cite{kay1993}.
 
-For the 511-point QPSK sequence used in this paper ($\norm{s'}^2 \approx 3.25$, $c \approx 1.63$), the idealized quadratic-model prediction~\eqref{eq:cor1} yields $\Var/\CRB \approx 0.15$ at $\delta=0$. This value is below unity because the quadratic model overestimates the autocorrelation decay at $|\tau|\approx 1$, leading to an overestimate of the effective curvature $c$ in the gradient coefficients. When the actual waveform autocorrelation is used to compute the effective gradient, the predicted ratio aligns with the empirical measurements.
-
-\textbf{Experimental validation.} The two-stage combination (Stage~1 + Stage~2) achieves $\Var/\CRB \in [1.08, 1.23]$ across $\SNR = -5$ to $+15$~dB (Table~\ref{tab:crb}), corresponding to a CRB efficiency of \textbf{0.81--0.93}. This establishes that the two-stage estimator is asymptotically efficient across the practical SNR range.
+For the 511-point QPSK sequence used in this paper ($\norm{s'}^2 \approx 3.25$, $c \approx 1.63$), the idealized quadratic-model prediction~\eqref{eq:cor1} yields $\Var/\CRB \approx 0.15$ at $\delta=0$. This value is below unity because the quadratic model overestimates the autocorrelation decay at $|\tau|\approx 1$, leading to an overestimate of the effective curvature $c$ in the gradient coefficients. When the actual waveform autocorrelation is used to compute the effective gradient, the predicted ratio aligns with the empirical measurements. The two-stage combination (Stage~1 + Stage~2) achieves $\Var/\CRB \in [1.08, 1.23]$ across $\SNR = -5$ to $+15$~dB (Table~\ref{tab:crb}), corresponding to a CRB efficiency of \textbf{0.81--0.93}, establishing that the two-stage estimator is asymptotically efficient across the practical SNR range.
 
 \subsection{Effect of the Second Stage}
 
@@ -629,7 +625,7 @@ Stage~2 $\Delta$ & 0.005 $T_s$ & $10\times$ below CRB at 15~dB \\
 \end{tabular}
 \end{table}
 
-We compare against five baseline methods: Integer SAGE~\cite{fleury1999}, Matched Filter (MF, 381 atoms), OMP~\cite{pati1993}, NOMP~\cite{mamandipoor2016} (Hann-windowed Newton refinement, 3 iters), and SBL~\cite{wipf2004} (adaptive noise variance, Woodbury acceleration, 50 EM iters). All dictionary-based methods share the same 381-atom dictionary spanning [30,~220] ms at 0.5 ms resolution.
+We compare against five baseline methods: Integer SAGE~\cite{fleury1999}, Matched Filter (MF, 381 atoms), OMP~\cite{pati1993}, NOMP~\cite{mamandipoor2016} (Hann-windowed Newton refinement, 3 iters), and SBL~\cite{wipf2004} (adaptive noise variance, Woodbury acceleration, 50 EM iters). All dictionary-based methods share the same 381-atom dictionary spanning [30,~220] ms at 0.5,T_s resolution.
 
 \subsection{Delay RMSE vs.\ SNR}
 
@@ -666,9 +662,9 @@ Six key observations emerge:
 \begin{enumerate}
 \item \textbf{Integer SAGE plateaus} at RMSE $\approx$ 3 ms for $\SNR \ge -5$~dB---the grid mismatch floor.
 \item \textbf{CD-SAGE achieves RMSE = 0.0251 at 0~dB}, a \textbf{115$\times$ improvement} over integer SAGE, and tracks the CRB within 1.04--1.11$\times$ across $\SNR = -5$ to $+15$~dB.
-\item \textbf{Dictionary methods (MF, OMP, SBL) hit a quantization floor} at RMSE $\approx$ 0.18--0.19, determined by the 0.5 ms grid resolution. With a deliberately chosen worst-case true delay for Path~3 ($\tau_3 = 200.25$, exactly midway between grid points 200.0 and 200.5), the grid bias is 0.25~ms. CD-SAGE remains unaffected because it estimates continuous-valued delays.
-\item \textbf{NOMP (0.414) is stable after Newton fixes}---correcting a derivative sign error and applying Hann windowing eliminates the 4--12 ms divergence previously observed (Section~\ref{sec:accelerate}). However, the integer-grid OMP initialization limits performance on closely-spaced paths.
-\item \textbf{The 0.5 ms grid is deliberately adversarial} for dictionary methods: the 0.25 ms worst-case bias isolates the grid-mismatch effect from other confounding factors. This explains why dictionary RMSE (0.18) appears closer to the grid floor than in the original 0.83 ms grid experiments.
+\item \textbf{Dictionary methods (MF, OMP, SBL) hit a quantization floor} at RMSE $\approx$ 0.18--0.19, determined by the 0.5,T_s grid resolution. With a deliberately chosen worst-case true delay for Path~3 ($\tau_3 = 200.25$, exactly midway between grid points 200.0 and 200.5), the grid bias is 0.25~ms. CD-SAGE remains unaffected because it estimates continuous-valued delays.
+\item \textbf{NOMP (0.414) is stable after Newton fixes}, correcting a derivative sign error and applying Hann windowing eliminates the 4--12 ms divergence previously observed (Section~\ref{sec:accelerate}). However, the integer-grid OMP initialization limits performance on closely-spaced paths.
+\item \textbf{The 0.5,T_s grid is deliberately adversarial} for dictionary methods: the 0.25 ms worst-case bias isolates the grid-mismatch effect from other confounding factors. This explains why dictionary RMSE (0.18) appears closer to the grid floor than in the original 0.83 ms grid experiments.
 \item \textbf{Per-path analysis (Table~\ref{tab:perpath}) reveals strong path-dependent behavior}: dictionary methods perform well on isolated paths limited only by grid bias, but degrade sharply on closely-spaced paths where interference dominates.
 \end{enumerate}
 
@@ -739,7 +735,7 @@ Path~2 is the most challenging: it has the lowest amplitude (half of Path~1), is
 
 \textbf{Integer SAGE} fails catastrophically: RMSE = 4.98 ms. The integer-grid correlation peak for Path~2 falls at $\tau \approx 50$---the same integer location as Path~1. The 10.2 ms spacing is insufficient for the integer grid to resolve two distinct peaks; instead, a single broad correlation lobe spans both paths, and the argmax operation picks the stronger lobe (Path~1). This is the \textit{path-masking} phenomenon: a weaker path is invisible to integer-grid methods when it lies within the main lobe of a stronger neighbor. Notably, Path~2's RMSE under Integer SAGE \textit{increases} from 4.89 at $-5$~dB to 5.94 at $+15$~dB---a counter-intuitive trend explained by \textit{noise-aided estimation}: at low SNR, thermal noise occasionally enables the argmax to escape Path~1's dominant correlation lobe and detect Path~2's own peak near $\tau\approx61$, whereas at high SNR the deterministic masking by Path~1 produces a consistent error of $\sim$10.66~ms and a consequently higher RMSE. This stochastic resonance effect is a direct consequence of the path-masking geometry and is absent in CD-SAGE due to the E-step interference cancellation.
 
-\textbf{Dictionary methods} show partial improvement over integer SAGE but remain far from the CRB: MF achieves 0.192, OMP 0.166, and SBL 0.163. The 0.5 ms dictionary provides enough resolution to separate the two correlation peaks (10.2 ms $\gg$ 0.5 ms grid), but \textit{residual interference} from Path~1 limits accuracy. After subtracting Path~1's estimated contribution (at grid point 50.5), the residual still contains $\sim 5\%$ of Path~1's energy due to the 0.07 ms grid misalignment. This residual leaks into Path~2's correlation, biasing the peak location by 0.1--0.2 ms.
+\textbf{Dictionary methods} show partial improvement over integer SAGE but remain far from the CRB: MF achieves 0.192, OMP 0.166, and SBL 0.163. The 0.5,T_s dictionary provides enough resolution to separate the two correlation peaks (10.2 ms $\gg$ 0.5,T_s grid), but \textit{residual interference} from Path~1 limits accuracy. After subtracting Path~1's estimated contribution (at grid point 50.5), the residual still contains $\sim 5\%$ of Path~1's energy due to the 0.07 ms grid misalignment. This residual leaks into Path~2's correlation, biasing the peak location by 0.1--0.2 ms.
 
 \textbf{NOMP} achieves RMSE = 0.146---its best per-path result and notably better than MF/OMP/SBL on this path. The Hann-windowed Newton refinement, operating on a clean window around $\tau \approx 60.7$, successfully pulls the estimate toward the true continuous delay. However, the absence of iterative interference cancellation (the outer SAGE loop) limits further improvement. This result validates the Newton fix (Section~\ref{sec:accelerate}) while confirming that Newton refinement alone cannot substitute for the E-step interference cancellation that distinguishes CD-SAGE.
 
@@ -749,7 +745,7 @@ Path~2 is the most challenging: it has the lowest amplitude (half of Path~1), is
 
 Path~3 is deliberately designed as a controlled experiment: placed at $\tau = 200.25$, exactly midway between grid points 200.0 and 200.5 (distance = 0.25 to either), and separated from Path~2 by 139.6 ms ($\gg$ the correlation main-lobe width). With negligible inter-path interference, all performance differences are attributable solely to each algorithm's ability to handle \textit{fractional-delay estimation}---the grid mismatch problem in its purest form.
 
-\textbf{CD-SAGE} achieves RMSE = 0.0216, approaching the CRB of 0.0210 (efficiency = 1.03$\times$). The slight shortfall from the CRB is attributable to the 0.005 ms quantization of Stage~2's grid search: $\Delta^2/12 \approx 2.1\times 10^{-6}$, which when combined with the Stage~1 residual variance, produces a net RMSE $\sim 3\%$ above the CRB at this SNR.
+\textbf{CD-SAGE} achieves RMSE = 0.0216, approaching the CRB of 0.0210 (efficiency = 1.03$\times$). The slight shortfall from the CRB is attributable to the 0.005,T_s quantization of Stage~2's grid search: $\Delta^2/12 \approx 2.1\times 10^{-6}$, which when combined with the Stage~1 residual variance, produces a net RMSE $\sim 3\%$ above the CRB at this SNR.
 
 \textbf{Integer SAGE} achieves RMSE = 0.25. With $\delta_3 = +0.25$, the nearest integer is $\tau = 200$ (error = 0.25). The RMSE exactly equals the grid offset because the path is isolated and strong enough that the integer-grid peak selection is deterministic at 0~dB SNR. This is the ideal case for integer SAGE---no path interference, moderate SNR---and yet the RMSE is 12$\times$ the CRB, demonstrating that \textit{the grid-mismatch error floor is structural, not noise-dependent}.
 
@@ -885,9 +881,13 @@ Three conclusions emerge from Table~\ref{tab:grid_compare}:
 
 \textbf{3) Dictionary methods face a resolution--complexity trade-off that CD-SAGE avoids.} Refining the grid from 0.5 to 0.1 increases dictionary size 5$\times$, MF runtime 11.4$\times$ (2.2 $\to$ \SI{25.1}{ms}), OMP runtime 9.2$\times$ (6.9 $\to$ \SI{63.2}{ms}), and renders SBL infeasible. CD-SAGE's runtime increases only 1.4$\times$ (602 $\to$ \SI{835}{ms}), because its cost is dominated by the \textit{number} of Stage~2 correlation evaluations (fixed at $\sim$200), not the dictionary size.
 
-\subsection{When Does CD-SAGE Provide an Advantage?}
+\subsection{SNR Regime Analysis}
 
-A related question is whether CD-SAGE offers any benefit at low SNR, where thermal noise dominates. Table~\ref{tab:snr_regime} segments performance by SNR regime, showing that the advantage is SNR-dependent---and that this dependence is \textit{desirable}, not a weakness.
+A related question is whether CD-SAGE offers any benefit at low SNR, where thermal noise dominates. Table~\ref{tab:snr_regime} segments performance by SNR regime.
+
+...
+
+The practical significance is that CD-SAGE does not need to outperform at all SNR levels; its advantage emerges precisely in the regime where communication is viable. At $\SNR \le -10$~dB, the estimation error is dominated by thermal noise regardless of the algorithm, and CD-SAGE offers no benefit. At $\SNR \ge -5$~dB, grid mismatch overtakes thermal noise as the dominant error source, and CD-SAGE provides an immediate and growing advantage over discrete-grid methods.
 
 \begin{table*}[cols=5,pos=h]
 \centering
@@ -910,13 +910,11 @@ $+15$ &  3.35 &  0.041 & 0.005 & \textbf{8.2$\times$ better} \\
 
 The three SNR regimes have clear physical interpretations:
 
-\textbf{Noise-limited ($\SNR \le -10$~dB):} All estimators are dominated by thermal noise. The CRB itself is large, and no method---continuous or discrete---can overcome the fundamental information limit. CD-SAGE's slightly \textit{worse} performance in this regime reflects the fact that its two-stage search occasionally selects a noise-induced false peak within the $\pm 0.5$ refinement window, whereas OMP's discrete search is constrained to the grid and less susceptible to this particular failure mode. This is not a fundamental limitation: below $-5$~dB, the channel is practically unusable regardless of the estimator.
+\textbf{Noise-limited ($\SNR \le -10$~dB):} All estimators are dominated by thermal noise. The CRB itself is large, and no method, continuous or discrete, can overcome the fundamental information limit. CD-SAGE's slightly \textit{worse} performance in this regime reflects the fact that its two-stage search occasionally selects a noise-induced false peak within the $\pm 0.5$ refinement window, whereas OMP's discrete search is constrained to the grid and less susceptible to this particular failure mode. This is not a fundamental limitation: below $-5$~dB, the channel is practically unusable regardless of the estimator.
 
 \textbf{Transition ($\SNR = -5$~dB):} Grid mismatch overtakes thermal noise as the dominant error source. Integer SAGE plateaus at $\sim$3~ms (the grid-mismatch floor), while CD-SAGE drops sharply to 0.042, outperforming OMP for the first time. This is the minimum SNR at which fractional refinement provides a net benefit.
 
-\textbf{Grid-limited ($\SNR \ge 0$~dB):} CD-SAGE's advantage grows monotonically with SNR because grid mismatch is structural---it does not diminish with increasing signal power---while CD-SAGE's estimation error continues to track the CRB. At \SI{+15}{dB}, CD-SAGE outperforms OMP by \textbf{8.2$\times$}. This is the operating regime for which the two-stage estimator is designed: SNR levels where the channel is viable, but integer-grid SAGE and dictionary methods are bottlenecked by discretization error.
-
-The practical significance is clear: CD-SAGE does not need to outperform at \textit{all} SNR---it needs to outperform in the regime where communication actually occurs. Below $-5$~dB, no estimator can recover the channel; above $-5$~dB, CD-SAGE provides an immediate and growing advantage.
+\textbf{Grid-limited ($\SNR \ge 0$~dB):} CD-SAGE's advantage grows monotonically with SNR because grid mismatch is structural: it does not diminish with increasing signal power, while CD-SAGE's estimation error continues to track the CRB. At \SI{+15}{dB}, CD-SAGE outperforms OMP by \textbf{8.2$\times$}. This is the operating regime for which the two-stage estimator is designed: SNR levels where the channel is viable, but integer-grid SAGE and dictionary methods are bottlenecked by discretization error.
 
 % ===========================================================================
 % SECTION 6: REAL-DATA VALIDATION ON WATERMARK BENCHMARK
@@ -950,9 +948,9 @@ Fig.~\ref{fig:watermark} and Table~\ref{tab:wm} present the results. Three regim
 
 \textbf{Low SNR ($-15$ to $-10$~dB):} All algorithms are noise-dominated with comparable RMSE. No method can overcome the thermal noise floor.
 
-\textbf{Transition ($-5$~dB):} CD-SAGE sharply transitions to near-CRB performance (RMSE $\approx 0.05$ at $M=4$), while dictionary methods (MF, OMP, SBL) immediately hit the 0.5 ms grid-quantization floor at $\sim$0.17--0.20 ms, and Int~SAGE remains limited by path masking.
+\textbf{Transition ($-5$~dB):} CD-SAGE sharply transitions to near-CRB performance (RMSE $\approx 0.05$ at $M=4$), while dictionary methods (MF, OMP, SBL) immediately hit the 0.5,T_s grid-quantization floor at $\sim$0.17--0.20 ms, and Int~SAGE remains limited by path masking.
 
-\textbf{High SNR ($0$ to $+15$~dB):} CD-SAGE continues tracking the CRB (RMSE $0.027 \to 0.005$ at $M=4$), while all other algorithms exhibit flat floors independent of SNR. The dictionary methods' RMSE of 0.17--0.20 matches the theoretical quantization floor $\Delta/\sqrt{12} \approx 0.144$ for a 0.5 ms grid, with the excess attributable to residual inter-path interference.
+\textbf{High SNR ($0$ to $+15$~dB):} CD-SAGE continues tracking the CRB (RMSE $0.027 \to 0.005$ at $M=4$), while all other algorithms exhibit flat floors independent of SNR. The dictionary methods' RMSE of 0.17--0.20 matches the theoretical quantization floor $\Delta/\sqrt{12} \approx 0.144$ for a 0.5,T_s grid, with the excess attributable to residual inter-path interference.
 
 \begin{table*}[cols=8,pos=h]
 \centering
@@ -978,7 +976,7 @@ $M$ & SNR (dB) & Int SAGE & \textbf{CD-SAGE} & MF & OMP & NOMP & SBL \\
 
 \begin{enumerate}
 \item \textbf{CD-SAGE is the only algorithm that tracks the CRB across all decimation factors and SNR.} At $M=4$ and \SI{0}{dB}, it achieves a \textbf{149$\times$ improvement} over Int~SAGE and a \textbf{7.3$\times$ advantage} over the best dictionary method.
-\item \textbf{Dictionary methods are fundamentally bounded by grid quantization.} MF, OMP, and SBL all plateau at $\sim$0.17--0.20 ms for $\SNR \ge -5$~dB, exactly the 0.5 ms grid-quantization floor---the cleanest possible demonstration that discrete-grid methods cannot overcome the resolution limit of their dictionary.
+\item \textbf{Dictionary methods are fundamentally bounded by grid quantization.} MF, OMP, and SBL all plateau at $\sim$0.17--0.20 ms for $\SNR \ge -5$~dB, exactly the 0.5,T_s grid-quantization floor---the cleanest possible demonstration that discrete-grid methods cannot overcome the resolution limit of their dictionary.
 \item \textbf{Path masking is a real phenomenon on measured channels.} At $M=4$, two decimated CIR paths fall within the same integer-grid correlation lobe, causing Int~SAGE to fail catastrophically (RMSE $\approx 4$). CD-SAGE's E-step interference cancellation resolves this masking, mirroring the Path~1/2 behavior in simulations (Section~\ref{sec:results}).
 \item \textbf{The two-stage design is validated on real data.} CD-SAGE's RMSE of 0.027--0.029 at \SI{0}{dB} is nearly independent of decimation factor, confirming that continuous-delay estimation eliminates the grid-quantization floor on real, measured multipath channels.
 \end{enumerate}
@@ -992,11 +990,11 @@ $M$ & SNR (dB) & Int SAGE & \textbf{CD-SAGE} & MF & OMP & NOMP & SBL \\
 This paper presented a two-stage fractional delay refinement strategy for SAGE-based multipath channel estimation. Three contributions constitute the core findings:
 
 \begin{enumerate}
-\item \textbf{Algorithmic:} The two-stage estimator achieves delay RMSE of \textbf{0.024 ms} at 0~dB SNR---a \textbf{99.2\% reduction} over integer-grid SAGE and a \textbf{85.7\% reduction} over the best dictionary method (OMP at 0.178). Coarse-to-fine acceleration provides a verified 4.5$\times$ speedup with no accuracy loss.
+\item \textbf{Theoretical Analysis:} We characterized the structural nature of the grid-mismatch error and established a complete theoretical framework for the parabolic interpolation estimator. Lemma~1 proved the $\delta$-invariance of the parabolic denominator under the idealized quadratic autocorrelation model, explaining the mechanism of near-exact recovery. Theorem~1 provided the closed-form asymptotic variance $\Var(\hat{\delta}) = (12\delta^2+1)/(16c^2 \cdot \SNR)$, establishing the $1/\SNR$ scaling that matches the CRB. Corollary~1 established the SNR-independent efficiency ratio, elevating parabolic interpolation from an empirical heuristic to a theoretically justified estimator.
 
-\item \textbf{Theoretical:} Lemma~1 establishes the $\delta$-invariance of the parabolic denominator under the idealized quadratic autocorrelation model, providing the conceptual foundation for near-exact recovery. Theorem~1 provides the closed-form asymptotic variance $\Var(\hat{\delta}) = (12\delta^2+1)/(16c^2 \cdot \SNR)$, establishing the $1/\SNR$ scaling that matches the CRB. Corollary~1 establishes the SNR-independent efficiency ratio, with experimental results confirming CRB efficiency of 0.81--0.93 for the combined two-stage estimator (1.04--1.11$\times$ CRB).
+\item \textbf{CD-SAGE Algorithm:} The two-stage complementary strategy combines parabolic coarse localization with local grid refinement. Stage~1 compresses the search range from the full signal length to a narrow window at constant complexity, and Stage~2 eliminates the residual bias of the quadratic approximation with fine-step search. The algorithm requires no dictionary construction, integrates directly into existing SAGE implementations, and achieves a verified 4.5$\times$ speedup through hierarchical search acceleration without accuracy loss.
 
-\item \textbf{Experimental:} Monte Carlo simulations (500 trials for main results, 200 for grid sensitivity) and ablation studies confirm that Stage~2 is the dominant accuracy contributor (14$\times$ additional improvement), and that the full method achieves the CRB within 1.04--1.11$\times$ across $\SNR = -5$ to $+15$~dB. Validation on the Watermark benchmark (NOF1 Norway fjord channel, $8\times100 = 800$~MC trials per SNR) demonstrates a 149$\times$ improvement over integer SAGE and a 7.3$\times$ advantage over dictionary methods on real, measured multipath channels.
+\item \textbf{Systematic Validation:} We constructed a complete validation framework from synthetic simulations to real underwater acoustic channels. Monte Carlo simulations and per-path analysis revealed the distinct failure mechanisms of baseline methods, including grid quantization, path masking, and interference limitation. Ablation studies confirmed Stage~2 as the dominant accuracy contributor. Validation on the Watermark benchmark (NOF1 Norway fjord channel) established the robustness of CD-SAGE under real multipath conditions, demonstrating consistent near-CRB performance across all decimation factors.
 \end{enumerate}
 
 The practical implication is clear: \textbf{CD-SAGE eliminates the grid-quantization floor on real measured multipath channels while maintaining the computational efficiency of the SAGE framework}, making it a drop-in upgrade for any SAGE-based channel sounding system.
