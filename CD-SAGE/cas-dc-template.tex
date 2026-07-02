@@ -359,7 +359,7 @@ The proposed CD-SAGE replaces the integer-constrained M-step of conventional SAG
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_1.pdf}
+\includegraphics[width=.9\textwidth]{figs/Fig_1_flowchart.pdf}
 \caption{Two-Stage CD-SAGE algorithm pipeline.}
 \label{fig:flowchart}
 \end{figure*}
@@ -370,7 +370,7 @@ The proposed CD-SAGE replaces the integer-constrained M-step of conventional SAG
 \item \textbf{Stage~2 (Local grid refinement, $\bigO(1/\Delta)$):} Search a fine grid of spacing $\Delta = 0.005\ T_s$ within $[\hat{\tau}^{(1)}_l \pm 0.5\ T_s]$, evaluating $|\inner{s(t-\tau)}{\hb{x}_l}|^2$ at each candidate via~\eqref{eq:fracshift} and selecting the maximizer. This corrects the residual error from the quadratic approximation underlying Stage~1.
 \end{itemize}
 
-The two stages are complementary: Stage~1 provides a computationally trivial coarse estimate whose deterministic bias (quantified in Fig.~\ref{fig:bias}) reaches approximately $-0.29\ T_s$ at $|\delta|\approx0.4$ and vanishes at $\delta=0,\pm0.5$; Stage~2 eliminates this residual at the cost of $\sim$200 correlation evaluations (reducible to $\sim$40 via coarse-to-fine acceleration, Section~\ref{sec:accelerate}).
+The two stages are complementary: Stage~1 provides a computationally trivial coarse estimate whose deterministic bias reaches approximately $-0.29\ T_s$ at $|\delta|\approx0.4$ and vanishes at $\delta=0,\pm0.5$; Stage~2 eliminates this residual at the cost of $\sim$200 correlation evaluations (reducible to $\sim$40 via coarse-to-fine acceleration, Section~\ref{sec:accelerate}).
 
 \subsection{Stage~1---Parabolic Interpolation}
 
@@ -394,11 +394,11 @@ The first-stage delay estimate is then:
 \end{equation}
 where the constraint is enforced by clipping: if $|y_{-1} - 2y_0 + y_{+1}| < 10^{-10}$ or if $|\hat{\delta}^{(1)}| > 0.5$, we set $\hat{\delta}^{(1)} = 0$.
 
-Under the quadratic autocorrelation model $R(\tau) \approx 1 - c\tau^2$ (valid for $|\tau| \ll 1$, verified in Fig.~\ref{fig:autocorr}), the denominator $y_{-1} - 2y_0 + y_{+1} = -2c|\alpha|$ is \textbf{independent of $\delta$}, a structural invariance established in Lemma~1 (Section~\ref{sec:lemma1}). The numerator $y_{-1} - y_{+1} = -4c|\alpha|\delta$ is linear in $\delta$, the denominator is constant, and their ratio yields $\delta$ exactly. Fig.~\ref{fig:parabolic} illustrates the interpolation geometry for three representative $\delta$ values.
+Under the quadratic autocorrelation model $R(\tau) \approx 1 - c\tau^2$, the denominator $y_{-1} - 2y_0 + y_{+1} = -2c|\alpha|$ is \textbf{independent of $\delta$}, a structural invariance established in Lemma~1 (Section~\ref{sec:lemma1}). The numerator $y_{-1} - y_{+1} = -4c|\alpha|\delta$ is linear in $\delta$, the denominator is constant, and their ratio yields $\delta$ exactly. Fig.~\ref{fig:parabolic} illustrates the interpolation geometry for three representative $\delta$ values.
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_2.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_2_parabolic.png}
 \caption{Parabolic interpolation geometry for three fractional delays. Three correlation samples (red) are fitted with a parabola (blue); the vertex gives the continuous delay estimate.}
 \label{fig:parabolic}
 \end{figure*}
@@ -407,7 +407,7 @@ Stage~1 requires zero additional FFTs beyond the integer-grid correlation alread
 
 \subsection{Stage~2---Local Grid Refinement}
 
-While the parabolic estimator is exact under a pure quadratic autocorrelation, the true signal autocorrelation contains higher-order terms that introduce a deterministic bias (quantified in Fig.~\ref{fig:bias}), reaching approximately $-0.29\ T_s$ at $|\delta|\approx0.4$ for the 511-point QPSK waveform. Stage~2 eliminates this residual by an exhaustive search on a fine local grid:
+While the parabolic estimator is exact under a pure quadratic autocorrelation, the true signal autocorrelation contains higher-order terms that introduce a deterministic bias, reaching approximately $-0.29\ T_s$ at $|\delta|\approx0.4$ for the 511-point QPSK waveform. Stage~2 eliminates this residual by an exhaustive search on a fine local grid:
 \begin{equation}
 \hat{\tau}_l^{(2)} = \argmax_{\tau \in \mathcal{T}} \abs{\inner{s(t-\tau)}{\hb{x}_l^{(i)}}}^2
 \label{eq:stage2}
@@ -423,7 +423,7 @@ The $\pm 0.5\ T_s$ search radius is sufficient because the parabolic estimate is
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_3.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_3_localrefine.png}
 \caption{Stage~2 local grid refinement. (a) Coarse search. (b) Fine search around the coarse estimate.}
 \label{fig:localrefine}
 \end{figure*}
@@ -524,7 +524,7 @@ The factor of $1/2$ arises because only the projection of the complex noise onto
 
 \begin{figure}
 \centering
-\includegraphics[width=.9\columnwidth]{figs/Fig_4.png}
+\includegraphics[width=.9\columnwidth]{figs/Fig_4_autocorrelation.png}
 \caption{Autocorrelation $|R(\tau)|$ and quadratic model $1-c\tau^{2}$ for the 511-point QPSK waveform.}
 \label{fig:autocorr}
 \end{figure}
@@ -552,11 +552,18 @@ All $\delta$-dependent terms cancel exactly. The noisy case follows by continuit
 
 \textbf{Remark (Model limitations).} The $\delta$-invariance is exact under the idealized quadratic autocorrelation model $R(\tau)=1-c\tau^2$. For practical waveforms such as the 511-point QPSK sequence used in this paper, the autocorrelation contains higher-order (quartic and beyond) terms that introduce weak $\delta$-dependence in the denominator. This residual dependence manifests as the deterministic bias quantified in Fig.~\ref{fig:bias} and is corrected by the Stage~2 local grid refinement. Lemma~1 should therefore be understood as a conceptual insight---explaining \emph{why} the three-point parabolic estimator can achieve near-exact recovery---rather than a claim of exactness for all waveforms.
 
+\begin{figure}
+\centering
+\includegraphics[width=.9\columnwidth]{figs/Fig_5_bias.png}
+\caption{Deterministic bias $\hat{\delta}-\delta$ of Stage~1, computed from the noiseless autocorrelation of the 511-point QPSK waveform.}
+\label{fig:bias}
+\end{figure}
+
 \subsection{Theorem~1---Asymptotic Variance}
 
 \begin{figure}
 \centering
-\includegraphics[width=.9\columnwidth]{figs/Fig_5.png}
+\includegraphics[width=.9\columnwidth]{figs/Fig_6_variance.png}
 \caption{Empirical and theoretical variance of $\hat{\delta}$ vs.\ SNR ($\delta=0.25$).}
 \label{fig:variance}
 \end{figure}
@@ -582,16 +589,9 @@ Using the diagonal noise covariance approximation $\bm{\Sigma}_\varepsilon = (N_
 &= \frac{24\delta^2 + 2}{16c^2|\alpha|^2} \cdot \frac{N_0}{2}
    = \frac{12\delta^2 + 1}{16c^2 \cdot \SNR} \nonumber
 \end{align}
-For practical waveforms whose autocorrelation deviates from the pure quadratic model, the curvature parameter $c$ in~\eqref{eq:thm1} should be interpreted as the \emph{effective} curvature $c_{\text{eff}}$ calibrated from the actual autocorrelation at the three sampling points; the experimental results in Section~\ref{sec:results} demonstrate that the $1/\SNR$ scaling holds.
+For practical waveforms whose autocorrelation deviates from the pure quadratic model, the curvature parameter $c$ in~\eqref{eq:thm1} should be interpreted as the \emph{effective} curvature $c_{\text{eff}}$ calibrated from the actual autocorrelation at the three sampling points; the experimental results in Section~\ref{sec:results} demonstrate that the $1/\SNR$ scaling holds. Fig.~\ref{fig:variance} shows the empirical variance of $\hat{\delta}$ from Monte Carlo simulation, which closely matches the theoretical prediction of~\eqref{eq:thm1} at $\delta=0.25$.
 
 \subsection{Corollary~1---CRB Efficiency}
-
-\begin{figure}
-\centering
-\includegraphics[width=.9\columnwidth]{figs/Fig_6.png}
-\caption{Deterministic bias $\hat{\delta}-\delta$ of Stage~1, computed from the noiseless autocorrelation of the 511-point QPSK waveform.}
-\label{fig:bias}
-\end{figure}
 
 \textbf{Corollary~1 (Asymptotic Efficiency).} From Theorem~1, both $\Var(\hat{\delta})$ and the CRB scale as $1/\SNR$. Their ratio is therefore SNR-independent:
 \begin{equation}
@@ -652,7 +652,7 @@ We compare against five baseline methods: Integer SAGE~\cite{fleury1999}, Matche
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_7.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_7_rmse.png}
 \caption{Delay, magnitude, and phase RMSE vs.\ SNR for all algorithms (500 MC trials).}
 \label{fig:rmse}
 \end{figure*}
@@ -738,7 +738,7 @@ CRB (per path) & 0.0168 & 0.0336 & 0.0210 \\
 
 \subsubsection{Path~1 --- The Strongest Path ($\tau_1 = 50.43$, $|\alpha_1| = 1.0$)}
 
-Path~1 benefits from the highest SNR among the three paths ($|\alpha_1|^2 / N_0$ is 6~dB above Path~2 and 2~dB above Path~3). However, it is only 10.2 ms from Path~2, creating mutual interference that challenges all algorithms except CD-SAGE.
+Path~1 benefits from the highest SNR among the three paths ($|\alpha_1|^2 / N_0$ is 6~dB above Path~2 and 2~dB above Path~3). However, it is only 10.2 ms from Path~2, creating mutual interference that challenges all algorithms except CD-SAGE. Fig.~\ref{fig:perpath1} shows the per-path RMSE vs.\ SNR for Path~1.
 
 \textbf{CD-SAGE} achieves RMSE = 0.0167, essentially at the CRB of 0.0168 (efficiency = 0.99$\times$). The two-stage refinement operates near-optimally: Stage~1's parabolic interpolation produces $\hat{\delta}^{(1)} \approx 0.43$ from the three correlation samples, and Stage~2 corrects the $\sim 10^{-3}$ quartic-model residual. The strong signal power ($|\alpha_1|=1.0$) ensures that the three correlation samples $y_{-1}, y_0, y_{+1}$ have high per-sample SNR, making the parabolic fit extremely accurate even before Stage~2 refinement.
 
@@ -750,7 +750,7 @@ Path~1 benefits from the highest SNR among the three paths ($|\alpha_1|^2 / N_0$
 
 \subsubsection{Path~2 --- Dense Multipath: The Weakest Link ($\tau_2 = 60.66$, $|\alpha_2| = 0.5$)}
 
-Path~2 is the most challenging: it has the lowest amplitude (half of Path~1), is located only 10.2 ms from the stronger Path~1, and sits at a fractional offset $\delta_2 = 0.16$ from the nearest integer. This combination of low SNR, strong adjacent-path interference, and moderate grid offset creates a stress test that exposes the fundamental differences between the algorithms.
+Path~2 is the most challenging: it has the lowest amplitude (half of Path~1), is located only 10.2 ms from the stronger Path~1, and sits at a fractional offset $\delta_2 = 0.16$ from the nearest integer. This combination of low SNR, strong adjacent-path interference, and moderate grid offset creates a stress test that exposes the fundamental differences between the algorithms. Fig.~\ref{fig:perpath2} shows the per-path RMSE vs.\ SNR for Path~2.
 
 \textbf{CD-SAGE} achieves RMSE = 0.0338, matching the CRB of 0.0336 (efficiency = 1.01$\times$). This is the most significant result in the per-path analysis: despite being the weakest path with the strongest interferer, CD-SAGE achieves CRB-level accuracy. The mechanism is the iterative E-step: in SAGE iteration $i \ge 2$, the E-step reconstructs $\hat{\mathbf{x}}_2 = \mathbf{r} + \hat{\alpha}_2\mathbf{s}(\hat{\tau}_2)$, where the residual $\mathbf{r}$ has Path~1's contribution already subtracted. This \textit{interference cancellation} enables Path~2 to be estimated as if Path~1 were absent. The 15-iteration SAGE loop refines both paths jointly, converging to near-CRB accuracy for both.
 
@@ -764,7 +764,7 @@ Path~2 is the most challenging: it has the lowest amplitude (half of Path~1), is
 
 \subsubsection{Path~3 --- The Isolated Path: Pure Grid-Mismatch Benchmark ($\tau_3 = 200.25$, $|\alpha_3| = 0.8$)}
 
-Path~3 is deliberately designed as a controlled experiment: placed at $\tau = 200.25$, exactly midway between grid points 200.0 and 200.5 (distance = 0.25 to either), and separated from Path~2 by 139.6 ms ($\gg$ the correlation main-lobe width). With negligible inter-path interference, all performance differences are attributable solely to each algorithm's ability to handle \textit{fractional-delay estimation}---the grid mismatch problem in its purest form.
+Path~3 is deliberately designed as a controlled experiment: placed at $\tau = 200.25$, exactly midway between grid points 200.0 and 200.5 (distance = 0.25 to either), and separated from Path~2 by 139.6 ms ($\gg$ the correlation main-lobe width). With negligible inter-path interference, all performance differences are attributable solely to each algorithm's ability to handle \textit{fractional-delay estimation}---the grid mismatch problem in its purest form. Fig.~\ref{fig:perpath3} shows the per-path RMSE vs.\ SNR for Path~3.
 
 \textbf{CD-SAGE} achieves RMSE = 0.0216, approaching the CRB of 0.0210 (efficiency = 1.03$\times$). The slight shortfall from the CRB is attributable to the $0.005\ T_s$ quantization of Stage~2's grid search: $\Delta^2/12 \approx 2.1\times 10^{-6}$, which when combined with the Stage~1 residual variance, produces a net RMSE $\sim 3\%$ above the CRB at this SNR.
 
@@ -790,21 +790,21 @@ Viewing the results \textit{across} paths reveals each algorithm's characteristi
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_8.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_8_path1.png}
 \caption{Per-path RMSE vs.\ SNR for Path~1 ($\tau_{1}=50.43$, $|\alpha_{1}|=1.0$).}
 \label{fig:perpath1}
 \end{figure*}
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_9.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_9_path2.png}
 \caption{Per-path RMSE vs.\ SNR for Path~2 ($\tau_{2}=60.66$, $|\alpha_{2}|=0.5$).}
 \label{fig:perpath2}
 \end{figure*}
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_10.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_10_path3.png}
 \caption{Per-path RMSE vs.\ SNR for Path~3 ($\tau_{3}=200.25$, $|\alpha_{3}|=0.8$).}
 \label{fig:perpath3}
 \end{figure*}
@@ -813,7 +813,7 @@ A single-trial channel estimation at $\SNR = 10$~dB visually illustrates the per
 
 \begin{figure}
 \centering
-\includegraphics[width=.9\columnwidth]{figs/Fig_11.png}
+\includegraphics[width=.9\columnwidth]{figs/Fig_11_stem.png}
 \caption{Single-trial channel estimates at SNR $=10$~dB for all six algorithms.}
 \label{fig:stem}
 \end{figure}
@@ -843,7 +843,7 @@ Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} isolate each component's co
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_12.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_12_ablation.png}
 \caption{Ablation study: contribution of each component to delay RMSE at 0~dB SNR.}
 \label{fig:ablation}
 \end{figure*}
@@ -962,7 +962,7 @@ where $s(t)$ is the 511-point QPSK waveform and $\tau_i / M$ is the true delay i
 
 \begin{figure*}
 \centering
-\includegraphics[width=.9\textwidth]{figs/Fig_13.png}
+\includegraphics[width=.9\textwidth]{figs/Fig_13_watermark.png}
 \caption{Delay RMSE vs.\ SNR on the Watermark NOF1 benchmark ($M=4$ and $M=8$, 800 MC trials per SNR).}
 \label{fig:watermark}
 \end{figure*}

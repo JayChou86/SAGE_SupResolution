@@ -1,94 +1,234 @@
-\begin{thebibliography}{16}
-\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\begin{thebibliography}{26}
+\providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
-\providecommand{\href}[2]{#2}
-\providecommand{\path}[1]{#1}
-\providecommand{\DOIprefix}{doi:}
-\providecommand{\ArXivprefix}{arXiv:}
-\providecommand{\URLprefix}{URL: }
-\providecommand{\Pubmedprefix}{pmid:}
-\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
-\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
-\providecommand{\bibinfo}[2]{#2}
-\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
-%Type = Article
-\bibitem[{Chi and {Ferreira Da Costa}(2020)}]{chi2020}
-\bibinfo{author}{Chi, Y.}, \bibinfo{author}{{Ferreira Da Costa}, M.}, \bibinfo{year}{2020}.
-\newblock \bibinfo{title}{Harnessing sparsity over the continuum: Atomic norm minimization for superresolution}.
-\newblock \bibinfo{journal}{IEEE Signal Process. Mag.} \bibinfo{volume}{37}, \bibinfo{pages}{39--57}.
-%Type = Article
-\bibitem[{Eggen et~al.(2001)Eggen, Baggeroer and Preisig}]{eggen2001}
-\bibinfo{author}{Eggen, T.H.}, \bibinfo{author}{Baggeroer, A.B.}, \bibinfo{author}{Preisig, J.C.}, \bibinfo{year}{2001}.
-\newblock \bibinfo{title}{Communication over {D}oppler spread channels---{P}art~{I}: Channel and receiver models}.
-\newblock \bibinfo{journal}{IEEE J. Ocean. Eng.} \bibinfo{volume}{26}, \bibinfo{pages}{62--71}.
-%Type = Article
-\bibitem[{Fessler and Hero(1994)}]{fessler1994}
-\bibinfo{author}{Fessler, J.A.}, \bibinfo{author}{Hero, A.O.}, \bibinfo{year}{1994}.
-\newblock \bibinfo{title}{Space-alternating generalized expectation-maximization algorithm}.
-\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{42}, \bibinfo{pages}{2664--2677}.
-%Type = Article
-\bibitem[{Fleury et~al.(1999)Fleury, Tschudin, Heddergott, Dahlhaus and Pedersen}]{fleury1999}
-\bibinfo{author}{Fleury, B.H.}, \bibinfo{author}{Tschudin, M.}, \bibinfo{author}{Heddergott, R.}, \bibinfo{author}{Dahlhaus, D.}, \bibinfo{author}{Pedersen, K.I.}, \bibinfo{year}{1999}.
-\newblock \bibinfo{title}{Channel parameter estimation in mobile radio environments using the {SAGE} algorithm}.
-\newblock \bibinfo{journal}{IEEE J. Sel. Areas Commun.} \bibinfo{volume}{17}, \bibinfo{pages}{434--450}.
-%Type = Book
-\bibitem[{Kay(1993)}]{kay1993}
-\bibinfo{author}{Kay, S.M.}, \bibinfo{year}{1993}.
-\newblock \bibinfo{title}{Fundamentals of Statistical Signal Processing: Estimation Theory}.
-\newblock \bibinfo{publisher}{Prentice-Hall}, \bibinfo{address}{Upper Saddle River, NJ}.
-%Type = Article
-\bibitem[{Kiefer(1953)}]{kiefer1953}
-\bibinfo{author}{Kiefer, J.}, \bibinfo{year}{1953}.
-\newblock \bibinfo{title}{Sequential minimax search for a maximum}.
-\newblock \bibinfo{journal}{Proc. Amer. Math. Soc.} \bibinfo{volume}{4}, \bibinfo{pages}{502--506}.
-%Type = Article
-\bibitem[{Mamandipoor et~al.(2016)Mamandipoor, Ramasamy and Madhow}]{mamandipoor2016}
-\bibinfo{author}{Mamandipoor, B.}, \bibinfo{author}{Ramasamy, D.}, \bibinfo{author}{Madhow, U.}, \bibinfo{year}{2016}.
-\newblock \bibinfo{title}{{N}ewtonized orthogonal matching pursuit: Frequency estimation over the continuum}.
-\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{64}, \bibinfo{pages}{5066--5081}.
-%Type = Article
-\bibitem[{Moddemeijer(1991)}]{moddemeijer1991}
-\bibinfo{author}{Moddemeijer, R.}, \bibinfo{year}{1991}.
-\newblock \bibinfo{title}{On the determination of the position of extrema of sampled correlators}.
-\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{39}, \bibinfo{pages}{216--219}.
-%Type = Inproceedings
-\bibitem[{Pati et~al.(1993)Pati, Rezaiifar and Krishnaprasad}]{pati1993}
-\bibinfo{author}{Pati, Y.C.}, \bibinfo{author}{Rezaiifar, R.}, \bibinfo{author}{Krishnaprasad, P.S.}, \bibinfo{year}{1993}.
-\newblock \bibinfo{title}{Orthogonal matching pursuit: Recursive function approximation with applications to wavelet decomposition}, in: \bibinfo{booktitle}{Proc. Asilomar Conf. Signals, Systems and Computers}, pp. \bibinfo{pages}{40--44}.
-%Type = Article
-\bibitem[{Safari et~al.(2021)Safari, Daei and Haddadi}]{safari2021}
-\bibinfo{author}{Safari, M.}, \bibinfo{author}{Daei, S.}, \bibinfo{author}{Haddadi, F.}, \bibinfo{year}{2021}.
-\newblock \bibinfo{title}{Off-the-grid recovery of time and frequency shifts with multiple measurement vectors}.
-\newblock \bibinfo{journal}{Signal Process.} \bibinfo{volume}{183}, \bibinfo{pages}{107986}.
-%Type = Article
-\bibitem[{Schmidt(1986)}]{schmidt1986}
-\bibinfo{author}{Schmidt, R.}, \bibinfo{year}{1986}.
-\newblock \bibinfo{title}{Multiple emitter location and signal parameter estimation}.
-\newblock \bibinfo{journal}{IEEE Trans. Antennas Propag.} \bibinfo{volume}{34}, \bibinfo{pages}{276--280}.
-%Type = Article
-\bibitem[{Stojanovic and Preisig(2009)}]{stojanovic2009}
-\bibinfo{author}{Stojanovic, M.}, \bibinfo{author}{Preisig, J.}, \bibinfo{year}{2009}.
-\newblock \bibinfo{title}{Underwater acoustic communication channels: Propagation models and statistical characterization}.
-\newblock \bibinfo{journal}{IEEE Commun. Mag.} \bibinfo{volume}{47}, \bibinfo{pages}{84--89}.
-%Type = Article
-\bibitem[{Svilainis et~al.(2013)Svilainis, Dumbrava, Chaziachmetovas and Aleksandrovas}]{svilainis2013}
-\bibinfo{author}{Svilainis, L.}, \bibinfo{author}{Dumbrava, V.}, \bibinfo{author}{Chaziachmetovas, A.}, \bibinfo{author}{Aleksandrovas, A.}, \bibinfo{year}{2013}.
-\newblock \bibinfo{title}{Subsample interpolation bias error in time of flight estimation by direct correlation in digital domain}.
-\newblock \bibinfo{journal}{Measurement} \bibinfo{volume}{46}, \bibinfo{pages}{3950--3958}.
-%Type = Article
-\bibitem[{Tang et~al.(2013)Tang, Bhaskar, Shah and Recht}]{tang2013}
-\bibinfo{author}{Tang, G.}, \bibinfo{author}{Bhaskar, B.N.}, \bibinfo{author}{Shah, P.}, \bibinfo{author}{Recht, B.}, \bibinfo{year}{2013}.
-\newblock \bibinfo{title}{Compressed sensing off the grid}.
-\newblock \bibinfo{journal}{IEEE Trans. Inf. Theory} \bibinfo{volume}{59}, \bibinfo{pages}{7465--7490}.
-%Type = Article
-\bibitem[{{van Walree} et~al.(2017){van Walree}, Socheleau, Otnes and Jenserud}]{watermark2017}
-\bibinfo{author}{{van Walree}, P.A.}, \bibinfo{author}{Socheleau, F.X.}, \bibinfo{author}{Otnes, R.}, \bibinfo{author}{Jenserud, T.}, \bibinfo{year}{2017}.
-\newblock \bibinfo{title}{The {W}atermark benchmark for underwater acoustic modulation schemes}.
-\newblock \bibinfo{journal}{IEEE J. Ocean. Eng.} \bibinfo{volume}{42}, \bibinfo{pages}{1007--1018}.
-%Type = Article
-\bibitem[{Wipf and Rao(2004)}]{wipf2004}
-\bibinfo{author}{Wipf, D.P.}, \bibinfo{author}{Rao, B.D.}, \bibinfo{year}{2004}.
-\newblock \bibinfo{title}{Sparse {B}ayesian learning for basis selection}.
-\newblock \bibinfo{journal}{IEEE Trans. Signal Process.} \bibinfo{volume}{52}, \bibinfo{pages}{2153--2164}.
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Stojanovic and Preisig(2009)]{stojanovic2009}
+M.~Stojanovic and J.~Preisig.
+\newblock Underwater acoustic communication channels: {{Propagation}} models
+  and statistical characterization.
+\newblock \emph{IEEE Communications Magazine}, 47\penalty0 (1):\penalty0
+  84--89, 2009.
+\newblock \doi{10.1109/MCOM.2009.4752682}.
+
+\bibitem[Eggen et~al.(2001)Eggen, Baggeroer, and Preisig]{eggen2001}
+T.~H. Eggen, A.~B. Baggeroer, and J.~C. Preisig.
+\newblock Communication over doppler spread channels---part {{I}}: {{Channel}}
+  and receiver models.
+\newblock \emph{IEEE Journal of Oceanic Engineering}, 26\penalty0 (1):\penalty0
+  62--71, 2001.
+\newblock \doi{10.1109/48.820737}.
+
+\bibitem[Fessler and Hero(1994)]{fessler1994}
+J.~A. Fessler and A.~O. Hero.
+\newblock Space-alternating generalized expectation-maximization algorithm.
+\newblock \emph{IEEE Transactions on Signal Processing}, 42\penalty0
+  (10):\penalty0 2664--2677, 1994.
+\newblock \doi{10.1109/78.324732}.
+
+\bibitem[Fleury et~al.(1999)Fleury, Tschudin, Heddergott, Dahlhaus, and
+  Pedersen]{fleury1999}
+B.~H. Fleury, M.~Tschudin, R.~Heddergott, D.~Dahlhaus, and K.~I. Pedersen.
+\newblock Channel parameter estimation in mobile radio environments using the
+  {{SAGE}} algorithm.
+\newblock \emph{IEEE Journal on Selected Areas in Communications}, 17\penalty0
+  (3):\penalty0 434--450, 1999.
+\newblock \doi{10.1109/49.753729}.
+
+\bibitem[Shutin(2004)]{shutin2004}
+D.~Shutin.
+\newblock \emph{Multipath Tracking and Prediction for Multiple-Input
+  Multiple-Output Wireless Channels}.
+\newblock PhD thesis, ETH Zurich, 2004.
+
+\bibitem[Pati et~al.(1993)Pati, Rezaiifar, and Krishnaprasad]{pati1993}
+Y.~C. Pati, R.~Rezaiifar, and P.~S. Krishnaprasad.
+\newblock Orthogonal matching pursuit: {{Recursive}} function approximation
+  with applications to wavelet decomposition.
+\newblock In \emph{Proc. {{Asilomar}} Conf. {{Signals}}, Systems and
+  Computers}, pages 40--44, 1993.
+\newblock \doi{10.1109/ACSSC.1993.342465}.
+
+\bibitem[Wipf and Rao(2004)]{wipf2004}
+D.P. Wipf and B.D. Rao.
+\newblock Sparse bayesian learning for basis selection.
+\newblock \emph{IEEE Transactions on Signal Processing}, 52\penalty0
+  (8):\penalty0 2153--2164, August 2004.
+\newblock ISSN 1053-587X.
+\newblock \doi{10.1109/TSP.2004.831016}.
+
+\bibitem[Qiao et~al.(2020)Qiao, Song, Ma, Sun, and Zhang]{qiao2020}
+Gang Qiao, Qingjun Song, Lu~Ma, Zongxin Sun, and Jiarong Zhang.
+\newblock Channel prediction based temporal multiple sparse bayesian learning
+  for channel estimation in fast time-varying underwater acoustic {{OFDM}}
+  communications.
+\newblock \emph{Signal Processing}, 175:\penalty0 107668, October 2020.
+\newblock ISSN 01651684.
+\newblock \doi{10.1016/j.sigpro.2020.107668}.
+
+\bibitem[Qiao et~al.(2018)Qiao, Song, Ma, Liu, Sun, and
+  Gan]{qiaoSparseBayesianLearning2018}
+Gang Qiao, Qingjun Song, Lu~Ma, Songzuo Liu, Zongxin Sun, and Shuwei Gan.
+\newblock Sparse bayesian learning for channel estimation in time-varying
+  underwater acoustic {{OFDM}} communication.
+\newblock \emph{IEEE Access}, 6:\penalty0 56675--56684, 2018.
+\newblock ISSN 2169-3536.
+\newblock \doi{10.1109/ACCESS.2018.2873406}.
+
+\bibitem[Feng et~al.(2023)Feng, Wang, Sun, Qi, Qasem, and
+  Cui]{WOS:000930761300001}
+Xiao Feng, Junfeng Wang, Haixin Sun, Jie Qi, Zeyad~A.H. Qasem, and Yue Cui.
+\newblock Channel estimation for underwater acoustic {{OFDM}} communications
+  via temporal sparse bayesian learning.
+\newblock \emph{Signal Processing}, 207\penalty0 (108951):\penalty0 108951,
+  June 2023.
+\newblock ISSN 01651684.
+\newblock \doi{10.1016/j.sigpro.2023.108951}.
+
+\bibitem[Dong et~al.(2026)Dong, Men, Han, Yin, and Niyato]{11348964}
+Bowen Dong, Wei Men, Xiao Han, Jingwei Yin, and Dusit Niyato.
+\newblock Efficient anadromic gradient descent-based off-grid underwater
+  acoustic channel estimation for long-term {{IoUT}} systems.
+\newblock \emph{IEEE Internet of Things Journal}, 13\penalty0 (6):\penalty0
+  12359--12374, March 2026.
+\newblock ISSN 2327-4662, 2372-2541.
+\newblock \doi{10.1109/JIOT.2026.3653677}.
+
+\bibitem[Yang et~al.(2026)Yang, Ma, Liu, Qiao, Song, and
+  Li]{yangUnderwaterAcousticOTFS2026}
+Yang Yang, Lu~Ma, Songzuo Liu, Gang Qiao, Yang Song, and Tong Li.
+\newblock Underwater acoustic {{OTFS}} with nonuniform doppler shifts: Modeling
+  and off-grid block-sparse channel estimation algorithm.
+\newblock \emph{IEEE Journal of Oceanic Engineering}, 51\penalty0 (1):\penalty0
+  641--658, January 2026.
+\newblock ISSN 0364-9059, 1558-1691, 2373-7786.
+\newblock \doi{10.1109/JOE.2025.3599256}.
+
+\bibitem[Liu et~al.(2025)Liu, Adil, Ma, Mazhar, and
+  Qiao]{liuDenseNetBasedRobustChannel2025}
+Songzuo Liu, Muhamamd Adil, Lu~Ma, Suleman Mazhar, and Gang Qiao.
+\newblock {{DenseNet-based}} robust channel estimation in {{OFDM}} for
+  improving underwater acoustic communication.
+\newblock \emph{IEEE Journal of Oceanic Engineering}, 50\penalty0 (2):\penalty0
+  1518--1537, April 2025.
+\newblock ISSN 0364-9059, 1558-1691, 2373-7786.
+\newblock \doi{10.1109/JOE.2024.3510929}.
+
+\bibitem[Tang et~al.(2013)Tang, Bhaskar, Shah, and Recht]{tang2013}
+Gongguo Tang, Badri~Narayan Bhaskar, Parikshit Shah, and Benjamin Recht.
+\newblock Compressed sensing off the grid.
+\newblock \emph{IEEE Transactions on Information Theory}, 59\penalty0
+  (11):\penalty0 7465--7490, November 2013.
+\newblock ISSN 0018-9448, 1557-9654.
+\newblock \doi{10.1109/TIT.2013.2277451}.
+
+\bibitem[Chi and Ferreira Da~Costa(2020)]{chi2020}
+Yuejie Chi and Maxime Ferreira Da~Costa.
+\newblock Harnessing sparsity over the continuum: {{Atomic}} norm minimization
+  for superresolution.
+\newblock \emph{IEEE Signal Processing Magazine}, 37\penalty0 (2):\penalty0
+  39--57, March 2020.
+\newblock ISSN 1053-5888, 1558-0792.
+\newblock \doi{10.1109/MSP.2019.2962209}.
+
+\bibitem[Schmidt(1986)]{schmidt1986}
+R.~Schmidt.
+\newblock Multiple emitter location and signal parameter estimation.
+\newblock \emph{IEEE Transactions on Antennas and Propagation}, 34\penalty0
+  (3):\penalty0 276--280, March 1986.
+\newblock ISSN 0018-926X, 1558-2221.
+\newblock \doi{10.1109/TAP.1986.1143830}.
+
+\bibitem[Safari et~al.(2021)Safari, Daei, and Haddadi]{WOS:000662912900031}
+Maral Safari, Sajad Daei, and Farzan Haddadi.
+\newblock Off-the-grid recovery of time and frequency shifts with multiple
+  measurement vectors.
+\newblock \emph{Signal Processing}, 183\penalty0 (108016):\penalty0 108016,
+  June 2021.
+\newblock ISSN 01651684.
+\newblock \doi{10.1016/j.sigpro.2021.108016}.
+
+\bibitem[Moddemeijer(1991)]{moddemeijer1991}
+R.~Moddemeijer.
+\newblock On the determination of the position of extrema of sampled
+  correlators.
+\newblock \emph{IEEE Transactions on Signal Processing}, 39\penalty0
+  (1):\penalty0 216--219, January 1991.
+\newblock ISSN 1053587X.
+\newblock \doi{10.1109/78.80788}.
+
+\bibitem[Svilainis et~al.(2013)Svilainis, Lukoseviciute, Dumbrava, and
+  Chaziachmetovas]{WOS:000326270400020}
+Linas Svilainis, Kristina Lukoseviciute, Vytautas Dumbrava, and Andrius
+  Chaziachmetovas.
+\newblock Subsample interpolation bias error in time of flight estimation by
+  direct correlation in digital domain.
+\newblock \emph{Measurement}, 46\penalty0 (10):\penalty0 3950--3958, December
+  2013.
+\newblock ISSN 0263-2241.
+\newblock \doi{10.1016/j.measurement.2013.07.038}.
+
+\bibitem[Asim et~al.(2020)Asim, Antreich, Cavalcante, De~Almeida, and
+  Nossek]{asimChannelParameterEstimation2020}
+Fazal~E Asim, Felix Antreich, Charles~C. Cavalcante, Andr{\'e}~L.F. De~Almeida,
+  and Josef~A. Nossek.
+\newblock Channel parameter estimation for millimeter-wave cellular systems
+  with hybrid beamforming.
+\newblock \emph{Signal Processing}, 176:\penalty0 107715, November 2020.
+\newblock ISSN 01651684.
+\newblock \doi{10.1016/j.sigpro.2020.107715}.
+
+\bibitem[Wang et~al.(2026)Wang, Ma, Guo, Kong, Mi, Zhang, and
+  Xiong]{wangJointEstimationMultipath2026}
+Yankun Wang, Dongtang Ma, Dengke Guo, Linjin Kong, Yuan Mi, Xiaoying Zhang, and
+  Jun Xiong.
+\newblock Joint estimation of multipath signal parameters using variational
+  {{SBL-inspired SAGE}} algorithm.
+\newblock \emph{Signal Processing}, 239:\penalty0 110264, February 2026.
+\newblock ISSN 01651684.
+\newblock \doi{10.1016/j.sigpro.2025.110264}.
+
+\bibitem[Ma et~al.(2025)Ma, Wang, Chen, Feng, and
+  Wang]{maEfficientMultidimensionalParameter2025}
+Jie Ma, Min Wang, Yiyi Chen, Rui Feng, and Haiming Wang.
+\newblock Efficient multidimensional parameter estimation using machine
+  learning-assisted {{SAGE}} algorithm.
+\newblock \emph{IEEE Signal Processing Letters}, 32:\penalty0 2798--2802, 2025.
+\newblock ISSN 1070-9908, 1558-2361.
+\newblock \doi{10.1109/LSP.2025.3588079}.
+
+\bibitem[Van~Walree et~al.(2017)Van~Walree, Socheleau, Otnes, and
+  Jenserud]{vanwalreeWatermarkBenchmarkUnderwater2017}
+Paul~A. Van~Walree, Francois-Xavier Socheleau, Roald Otnes, and Trond Jenserud.
+\newblock The {{Watermark Benchmark}} for {{Underwater Acoustic Modulation
+  Schemes}}.
+\newblock \emph{IEEE Journal of Oceanic Engineering}, 42\penalty0 (4):\penalty0
+  1007--1018, October 2017.
+\newblock ISSN 0364-9059, 1558-1691, 2373-7786.
+\newblock \doi{10.1109/JOE.2017.2699078}.
+
+\bibitem[Kiefer(1953)]{kiefer1953}
+J.~Kiefer.
+\newblock Sequential minimax search for a maximum.
+\newblock \emph{Proc. Amer. Math. Soc.}, 4\penalty0 (3):\penalty0 502--506,
+  1953.
+\newblock \doi{10.2307/2032161}.
+
+\bibitem[Mamandipoor et~al.(2016)Mamandipoor, Ramasamy, and
+  Madhow]{mamandipoor2016}
+B.~Mamandipoor, D.~Ramasamy, and U.~Madhow.
+\newblock {N}ewtonized orthogonal matching pursuit: {F}requency estimation over
+  the continuum.
+\newblock \emph{IEEE Trans. Signal Process.}, 64\penalty0 (19):\penalty0
+  5066--5081, 2016.
+\newblock \doi{10.1109/TSP.2016.2591507}.
+
+\bibitem[Kay(1993)]{kay1993}
+S.~M. Kay.
+\newblock \emph{Fundamentals of Statistical Signal Processing: {E}stimation
+  Theory}.
+\newblock Prentice-Hall, Upper Saddle River, NJ, 1993.
 
 \end{thebibliography}
